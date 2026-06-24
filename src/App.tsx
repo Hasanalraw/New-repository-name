@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   X, CheckCircle, Info, AlertCircle, Sparkles, LogOut, Download, 
-  HelpCircle, Menu, Loader2, CloudLightning 
+  HelpCircle, Menu, Loader2, CloudLightning, Lock, Key 
 } from "lucide-react";
 
 import { Sidebar } from "./components/Sidebar";
@@ -30,6 +30,11 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState<Record<string, Record<string, string>>>({});
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+  // Password Recovery / Update password state
+  const [showUpdatePassword, setShowUpdatePassword] = useState<boolean>(false);
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [updatingPassword, setUpdatingPassword] = useState<boolean>(false);
   
   // Custom Toasts Queue
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -102,6 +107,15 @@ export default function App() {
 
   // Keep track of user auth status
   useEffect(() => {
+    // Check URL hash/query for recovery parameters
+    const checkRecoveryHash = () => {
+      const hash = window.location.hash || window.location.search;
+      if (hash && (hash.includes("type=recovery") || hash.includes("access_token=") || hash.includes("recovery"))) {
+        setShowUpdatePassword(true);
+      }
+    };
+    checkRecoveryHash();
+
     const checkSession = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
@@ -116,6 +130,9 @@ export default function App() {
 
     // Listen to changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setShowUpdatePassword(true);
+      }
       if (session?.user) {
         setUser(session.user);
         await loadUserAnswers(session.user.id);
@@ -278,20 +295,11 @@ export default function App() {
   const overallProgress = calculateOverallProgress(userAnswers);
   const sectionProgresses = getSectionProgressesMap();
 
-  // Export Cumulative formatted TXT files containing all completed modules answers
+  // Export Cumulative formatted HTML report containing all completed modules answers with beautiful layout & print support
   const handleExportAllAnswers = () => {
-    let text = `============================================================\n`;
-    text += `             المخرجات والتقارير الشاملة للاستراتيجية التسويقية\n`;
-    text += `============================================================\n`;
-    text += `المالك: ${user?.email}\n`;
-    text += `تاريخ التصدير: ${new Date().toLocaleDateString("ar-EG")}\n`;
-    text += `الإنجاز الكلي: ${overallProgress}%\n`;
-    text += `============================================================\n\n`;
+    let sectionsHtml = "";
 
     defaultLectures.forEach((sec) => {
-      text += `[القسم]: ${sec.title}\n`;
-      text += `------------------------------------------------------------\n`;
-      
       // Load custom exercises or default baseline labels
       const savedCustom = localStorage.getItem(`custom_exercises_${sec.id}`);
       let exerciseFields: any[] = [];
@@ -302,7 +310,7 @@ export default function App() {
       }
 
       if (exerciseFields.length === 0) {
-        // Fallback fallback default questions labels
+        // Fallback default questions labels
         if (sec.id === "competitors") {
           exerciseFields = [
             { id: "comp_classification", label: "تحديد وتصنيف منافسيك (نفس المنتج 100%، منتجات مشابهة 60-70%، وحلول نفس المشكلة)" },
@@ -351,22 +359,402 @@ export default function App() {
       }
 
       const answers = userAnswers[sec.id] || {};
+      const sectionProgress = sectionProgresses[sec.id] || 0;
+      const isCompleted = sectionProgress === 100;
+
+      let qaHtml = "";
       exerciseFields.forEach((field) => {
-        const answer = answers[field.id] || "بانتظار الإدخال";
-        text += `السؤال: ${field.label}\n`;
-        text += `الإجابة: ${answer}\n\n`;
+        const rawAnswer = answers[field.id] || "";
+        const isPending = !rawAnswer.trim() || rawAnswer.trim() === "بانتظار الإدخال" || rawAnswer.trim().length <= 5;
+        const answerVal = isPending ? "بانتظار الإدخال والتحليل والدراسة من قبلك..." : rawAnswer;
+        
+        qaHtml += `
+        <div class="qa-item">
+          <div class="question">${field.label}</div>
+          <div class="answer ${isPending ? 'pending' : ''}">${answerVal}</div>
+        </div>`;
       });
-      text += `============================================================\n\n`;
+
+      sectionsHtml += `
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--brand-primary)">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <span>${sec.title}</span>
+          </div>
+          <span class="section-badge ${isCompleted ? 'completed' : ''}">الإنجاز: ${sectionProgress}%</span>
+        </div>
+        <div class="section-content">
+          ${qaHtml}
+        </div>
+      </div>`;
     });
 
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const htmlLayout = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التقرير الشامل للاستراتيجية التسويقية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-primary: #235355;
+      --brand-secondary: #0DF1BA;
+      --stone-900: #1c1917;
+      --stone-800: #292524;
+      --stone-100: #f5f5f4;
+      --stone-200: #e7e5e4;
+      --stone-500: #78716c;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--stone-100);
+      color: var(--stone-900);
+      line-height: 1.75;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    /* Floating Action / Navigation Area */
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    .btn {
+      font-family: 'Tajawal', sans-serif;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--brand-primary);
+      color: white;
+      box-shadow: 0 4px 15px rgba(35, 83, 85, 0.2);
+    }
+    .btn-primary:hover {
+      background: #153233;
+      transform: translateY(-1px);
+    }
+    .back-link {
+      color: var(--stone-500);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, var(--brand-primary) 0%, #112627 100%);
+      color: white;
+      padding: 45px;
+      border-radius: 28px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(35, 83, 85, 0.12);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .header-logo {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--brand-secondary);
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: inline-block;
+      background: rgba(13, 241, 186, 0.1);
+      padding: 4px 12px;
+      border-radius: 30px;
+    }
+    .header-title {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .header-desc {
+      font-size: 14px;
+      opacity: 0.85;
+      font-weight: 300;
+      max-width: 640px;
+      line-height: 1.6;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-cols: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-top: 35px;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .meta-label {
+      font-size: 11px;
+      opacity: 0.6;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .meta-val {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    /* Overall Progress Box */
+    .progress-box {
+      background: white;
+      padding: 30px;
+      border-radius: 24px;
+      margin-bottom: 35px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.015);
+      border: 1px solid rgba(35, 83, 85, 0.08);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .progress-label {
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--stone-800);
+    }
+    .progress-pct {
+      font-weight: 900;
+      color: var(--brand-primary);
+      font-size: 20px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: var(--stone-200);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+      border-radius: 10px;
+      width: ${overallProgress}%;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: white;
+      border-radius: 28px;
+      padding: 35px;
+      margin-bottom: 35px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.01);
+      border: 1px solid rgba(35, 83, 85, 0.08);
+      page-break-inside: avoid;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 18px;
+      border-bottom: 2px solid var(--stone-100);
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--brand-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-badge {
+      font-size: 11px;
+      font-weight: 800;
+      background: var(--stone-100);
+      padding: 6px 14px;
+      border-radius: 30px;
+      color: var(--stone-500);
+    }
+    .section-badge.completed {
+      background: rgba(13, 241, 186, 0.12);
+      color: #12725d;
+    }
+    
+    /* Q&A list */
+    .qa-item {
+      margin-bottom: 30px;
+    }
+    .qa-item:last-child {
+      margin-bottom: 0;
+    }
+    .question {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--stone-800);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+    .question::before {
+      content: '✦';
+      color: var(--brand-secondary);
+      font-size: 14px;
+      margin-top: -2px;
+    }
+    .answer {
+      background: #fafaf9;
+      padding: 20px 24px;
+      border-radius: 18px;
+      font-size: 13px;
+      color: var(--stone-900);
+      white-space: pre-wrap;
+      border-right: 4px solid var(--brand-primary);
+      line-height: 1.75;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.01);
+    }
+    .answer.pending {
+      color: var(--stone-500);
+      font-style: italic;
+      border-right: 4px solid var(--stone-200);
+      background: #fdfdfd;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--stone-500);
+      margin-top: 60px;
+      border-top: 1px solid var(--stone-200);
+      padding-top: 30px;
+      line-height: 1.8;
+    }
+
+    /* Print styling */
+    @media print {
+      body {
+        background-color: white;
+        padding: 0;
+      }
+      .actions, .btn {
+        display: none !important;
+      }
+      .header {
+        box-shadow: none;
+        border: 1px solid var(--brand-primary);
+        background: white !important;
+        color: var(--stone-900) !important;
+        padding: 30px;
+      }
+      .header-logo {
+        border: 1px solid var(--brand-primary);
+        color: var(--brand-primary);
+        background: none;
+      }
+      .header-desc {
+        color: var(--stone-800);
+      }
+      .meta-grid {
+        border-top: 1px solid var(--stone-200);
+      }
+      .meta-val {
+        color: var(--stone-900);
+      }
+      .section-card {
+        box-shadow: none;
+        border: 1px solid var(--stone-200);
+        page-break-inside: avoid;
+        padding: 25px;
+      }
+      .answer {
+        background: #fdfdfd;
+        border: 1px solid var(--stone-200);
+        border-right: 4px solid var(--brand-primary);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="actions">
+      <span class="back-link">منصة التدريب الذكي المتكاملة</span>
+      <button onclick="window.print()" class="btn btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+        </svg>
+        <span>طباعة / حفظ كـ PDF</span>
+      </button>
+    </div>
+
+    <div class="header">
+      <div class="header-logo">مخرجات التدريب الذكي</div>
+      <h1 class="header-title">التقرير الشامل للاستراتيجية التسويقية</h1>
+      <p class="header-desc">مستند استراتيجي مخصص تم إعداده وتطويره عبر منصة التدريب التفاعلية الذكية لمساعدتك في بناء حملات إعلانية وتوسيع حضورك الرقمي بنجاح.</p>
+      
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">الحساب البريدي المالك</span>
+          <span class="meta-val">${user?.email || "غير محدد"}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">تاريخ التصدير</span>
+          <span class="meta-val">${new Date().toLocaleDateString("ar-EG")}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">نسبة الإنجاز الإجمالي</span>
+          <span class="meta-val">${overallProgress}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-box">
+      <div class="progress-header">
+        <span class="progress-label">مستوى إكمال خطة الاستراتيجية</span>
+        <span class="progress-pct">${overallProgress}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+
+    ${sectionsHtml}
+
+    <div class="footer">
+      <p>تم استخراج هذا التقرير بأمان من منصة التدريب الذكي المتكاملة لعام 2026.</p>
+      <p>© جميع الحقوق محفوظة لمالك الحساب البريدي.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlLayout], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `استراتيجية_التسويق_المتكاملة_${user?.email.split("@")[0]}.txt`;
+    link.download = `استراتيجية_التسويق_المتكاملة_${(user?.email || "مستخدم").split("@")[0]}.html`;
     link.click();
     URL.revokeObjectURL(url);
-    addToast("تم تصدير ملف الاستراتيجية الشامل بنجاح! 📥", "success");
+    addToast("تم تصدير تقرير الاستراتيجية الأنيق بنجاح! 📥 يمكنك طباعته أو حفظه كـ PDF بكبسة زر واحدة.", "success");
   };
 
   const handleLogout = async () => {
@@ -375,6 +763,28 @@ export default function App() {
     setUserAnswers({});
     setActiveSectionId(null);
     addToast("تم تسجيل خروجك بأمان. رافقتك السلامة!", "info");
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      addToast("يجب أن تتكون كلمة المرور الجديدة من 6 أحرف على الأقل 🔒", "error");
+      return;
+    }
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      addToast("تم تحديث كلمة المرور الشخصية بنجاح! 🔑 يمكنك الآن الدخول بشكل آمن.", "success");
+      setShowUpdatePassword(false);
+      setNewPassword("");
+      // Clear URL fragment hash to clean up the address bar
+      window.location.hash = "";
+    } catch (err: any) {
+      addToast(err.message || "فشل تحديث كلمة المرور الشخصية", "error");
+    } finally {
+      setUpdatingPassword(false);
+    }
   };
 
   // If loading session on load
@@ -387,9 +797,72 @@ export default function App() {
     );
   }
 
-  // Auth Gate check
-  if (!user) {
+  // Auth Gate check (Bypassed if showUpdatePassword is true so recovery user can update password)
+  if (!user && !showUpdatePassword) {
     return <AuthGate onAuthenticated={(usr) => setUser(usr)} onToast={addToast} />;
+  }
+
+  // Password Update Form for Password Recovery flow
+  if (showUpdatePassword) {
+    return (
+      <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4 sm:p-6 font-sans text-right" dir="rtl">
+        <div className="w-full max-w-md bg-stone-950 border border-stone-800 rounded-3xl shadow-2xl overflow-hidden p-8 space-y-6">
+          <div className="text-center space-y-3">
+            <div className="mx-auto w-12 h-12 bg-brand-secondary/10 rounded-full flex items-center justify-center text-brand-secondary">
+              <Key className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-bold text-white">تحديث كلمة المرور الشخصية</h2>
+            <p className="text-xs text-stone-400">يرجى كتابة كلمة المرور الجديدة لحسابك الشخصي لمتابعة عملك بأمان.</p>
+          </div>
+
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-stone-300">كلمة المرور الجديدة</label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
+                  className="w-full px-4 py-3 bg-stone-900 border border-stone-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-secondary text-xs pr-10"
+                  required
+                />
+                <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={updatingPassword}
+              className="w-full py-3 bg-brand-secondary hover:bg-brand-secondary/90 disabled:bg-stone-800 disabled:text-stone-500 text-stone-950 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {updatingPassword ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-stone-950" />
+                  <span>جاري تحديث الحساب...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>تحديث وحفظ كلمة المرور</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowUpdatePassword(false);
+                window.location.hash = "";
+              }}
+              className="w-full py-2.5 bg-transparent hover:bg-white/5 text-stone-400 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-stone-800"
+            >
+              إلغاء والعودة لصفحة الدخول
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -440,7 +913,7 @@ export default function App() {
         onExportAll={handleExportAllAnswers}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
-        userName={user.email}
+        userName={user?.email || "مستخدم"}
       />
 
       {/* Main Content Area Container */}
@@ -480,7 +953,7 @@ export default function App() {
                 progressPercentage={overallProgress}
                 sectionProgresses={sectionProgresses}
                 onNavigate={setActiveSectionId}
-                userName={user.email.split("@")[0]}
+                userName={(user?.email || "مستخدم").split("@")[0]}
               />
             </motion.div>
           ) : (

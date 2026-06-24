@@ -30,14 +30,15 @@ class MockSupabaseClient {
     signUp: async ({ email, password }: { email: string; password?: string }) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const users = this.getStorageItem<any[]>("mock_supabase_users", []);
+      const normalizedEmail = email.trim().toLowerCase();
       
-      if (users.some((u) => u.email === email)) {
+      if (users.some((u) => u.email.trim().toLowerCase() === normalizedEmail)) {
         return { data: { user: null }, error: { message: "هذا البريد الإلكتروني مسجل بالفعل!" } };
       }
 
       const newUser = {
         id: "usr_" + Math.random().toString(36).substring(2, 11),
-        email,
+        email: normalizedEmail,
         password, // Simulating simple secure store
         created_at: new Date().toISOString(),
       };
@@ -55,7 +56,8 @@ class MockSupabaseClient {
     signInWithPassword: async ({ email, password }: { email: string; password?: string }) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const users = this.getStorageItem<any[]>("mock_supabase_users", []);
-      const user = users.find((u) => u.email === email && u.password === password);
+      const normalizedEmail = email.trim().toLowerCase();
+      const user = users.find((u) => u.email.trim().toLowerCase() === normalizedEmail && u.password === password);
 
       if (!user) {
         return { data: { user: null }, error: { message: "البريد الإلكتروني أو كلمة المرور غير صحيحة!" } };
@@ -105,6 +107,24 @@ class MockSupabaseClient {
           },
         },
       };
+    },
+
+    updateUser: async ({ password }: { password: string }) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const sessionUser = this.getStorageItem<any | null>("mock_supabase_session_user", null);
+      if (!sessionUser) {
+        return { data: null, error: { message: "غير مصرح به" } };
+      }
+      
+      const users = this.getStorageItem<any[]>("mock_supabase_users", []);
+      const idx = users.findIndex((u) => u.id === sessionUser.id);
+      if (idx !== -1) {
+        users[idx].password = password;
+        this.setStorageItem("mock_supabase_users", users);
+      }
+      sessionUser.password = password;
+      this.setStorageItem("mock_supabase_session_user", sessionUser);
+      return { data: { user: sessionUser }, error: null };
     },
   };
 

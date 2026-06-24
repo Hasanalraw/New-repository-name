@@ -35,17 +35,10 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   const [forgotEmail, setForgotEmail] = useState("");
 
   useEffect(() => {
-    // Check localStorage for 24h Portal Password bypass
-    const unlockedAt = localStorage.getItem("portal_unlocked_at");
+    // Check sessionStorage for Portal Password bypass
+    const unlockedAt = sessionStorage.getItem("portal_unlocked_at");
     if (unlockedAt) {
-      const parsedTime = new Date(unlockedAt).getTime();
-      const now = new Date().getTime();
-      // 24 Hours in ms
-      if (now - parsedTime < 24 * 60 * 60 * 1000) {
-        setIsPortalUnlocked(true);
-      } else {
-        localStorage.removeItem("portal_unlocked_at");
-      }
+      setIsPortalUnlocked(true);
     }
 
     // Check if user session is already logged in Supabase
@@ -62,7 +55,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   const handlePortalUnlock = (e: React.FormEvent) => {
     e.preventDefault();
     if (portalPassword === "HasDTB2an2026?") {
-      localStorage.setItem("portal_unlocked_at", new Date().toISOString());
+      sessionStorage.setItem("portal_unlocked_at", "true");
       setIsPortalUnlocked(true);
       onToast("تم فتح بوابة الوصول الموحدة بنجاح! مرحباً بك.", "success");
     } else {
@@ -81,10 +74,11 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
     setLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       if (isLoginTab) {
         // Sign In
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
         });
 
@@ -95,7 +89,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
       } else {
         // Sign Up
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
         });
 
@@ -120,7 +114,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
       return;
     }
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim());
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase());
       if (error) throw error;
       onToast("تم إرسال رابط استعادة كلمة المرور لبريدك الإلكتروني بنجاح! 📨", "success");
       setShowForgotModal(false);
