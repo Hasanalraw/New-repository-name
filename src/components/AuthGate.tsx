@@ -1,0 +1,334 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
+import { Lock, Mail, User, ShieldCheck, ArrowLeftRight, Sparkles, Loader2, Key } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
+
+interface AuthGateProps {
+  onAuthenticated: (user: any) => void;
+  onToast: (message: string, type: "success" | "info" | "error") => void;
+  id?: string;
+}
+
+export const AuthGate: React.FC<AuthGateProps> = ({
+  onAuthenticated,
+  onToast,
+  id
+}) => {
+  // Phase 1: Portal Password Gate
+  const [isPortalUnlocked, setIsPortalUnlocked] = useState(false);
+  const [portalPassword, setPortalPassword] = useState("");
+  const [portalError, setPortalError] = useState("");
+
+  // Phase 2: Personal Login / Signup
+  const [isLoginTab, setIsLoginTab] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Phase 3: Forgot Password
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+
+  useEffect(() => {
+    // Check localStorage for 24h Portal Password bypass
+    const unlockedAt = localStorage.getItem("portal_unlocked_at");
+    if (unlockedAt) {
+      const parsedTime = new Date(unlockedAt).getTime();
+      const now = new Date().getTime();
+      // 24 Hours in ms
+      if (now - parsedTime < 24 * 60 * 60 * 1000) {
+        setIsPortalUnlocked(true);
+      } else {
+        localStorage.removeItem("portal_unlocked_at");
+      }
+    }
+
+    // Check if user session is already logged in Supabase
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        onAuthenticated(data.user);
+      }
+    };
+    checkUser();
+  }, []);
+
+  // Handle Portal password unlocked
+  const handlePortalUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (portalPassword === "HasDTB2an2026?") {
+      localStorage.setItem("portal_unlocked_at", new Date().toISOString());
+      setIsPortalUnlocked(true);
+      onToast("تم فتح بوابة الوصول الموحدة بنجاح! مرحباً بك.", "success");
+    } else {
+      setPortalError("كلمة المرور الموحدة غير صحيحة! يرجى المحاولة مجدداً.");
+      onToast("فشل التحقق من كلمة المرور الموحدة", "error");
+    }
+  };
+
+  // Handle Register or Sign In
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      onToast("يرجى ملء جميع الحقول المطلوبة", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isLoginTab) {
+        // Sign In
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) throw error;
+        
+        onToast("أهلاً بك مجدداً! تم تسجيل دخولك الشخصي بنجاح.", "success");
+        onAuthenticated(data.user);
+      } else {
+        // Sign Up
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) throw error;
+
+        onToast("تهانينا! تم إنشاء حسابك الشخصي بنجاح وجاري إعداد لوحة التحكم.", "success");
+        onAuthenticated(data.user);
+      }
+    } catch (err: any) {
+      console.error(err);
+      onToast(err.message || "حدث خطأ أثناء المصادقة", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Reset Password request via Supabase Auth
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      onToast("يرجى كتابة بريدك الإلكتروني", "error");
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim());
+      if (error) throw error;
+      onToast("تم إرسال رابط استعادة كلمة المرور لبريدك الإلكتروني بنجاح! 📨", "success");
+      setShowForgotModal(false);
+      setForgotEmail("");
+    } catch (err: any) {
+      onToast(err.message || "فشل إرسال رابط الاستعادة", "error");
+    }
+  };
+
+  return (
+    <div id={id || "auth-gate-view"} className="min-h-screen bg-gradient-brand dark:bg-gradient-dark flex items-center justify-center p-4 sm:p-6 text-right font-sans">
+      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-secondary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-secondary/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
+
+      <div className="w-full max-w-md bg-white/95 dark:bg-stone-900/95 backdrop-blur-md rounded-3xl p-8 sm:p-10 border border-white/20 dark:border-stone-800 shadow-2xl z-10 relative space-y-8">
+        
+        {/* Portal Branding Header */}
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-16 h-16 bg-brand-primary/10 dark:bg-brand-secondary/10 text-brand-primary dark:text-brand-secondary rounded-2xl flex items-center justify-center shadow-lg">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-brand-primary dark:text-white">بوابة التدريب الذكي المتكامل</h2>
+          <p className="text-stone-500 dark:text-stone-400 text-xs font-light">
+            {isPortalUnlocked ? "بوابة المصادقة الشخصية السحابية" : "يرجى التحقق من تصريح الدخول الموحد للمنصة"}
+          </p>
+        </div>
+
+        {/* Phase 1: Portal Unlock Form */}
+        {!isPortalUnlocked ? (
+          <motion.form
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            onSubmit={handlePortalUnlock}
+            className="space-y-5"
+          >
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">كلمة المرور الموحدة للمنصة:</label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={portalPassword}
+                  onChange={(e) => {
+                    setPortalPassword(e.target.value);
+                    setPortalError("");
+                  }}
+                  placeholder="أدخل كلمة مرور بوابة الوصول..."
+                  className="w-full pl-4 pr-10 py-3.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                  required
+                />
+                <Lock className="w-4 h-4 text-stone-400 dark:text-stone-500 absolute top-4 right-3" />
+              </div>
+              {portalError && <p className="text-[10px] text-rose-500 font-semibold">{portalError}</p>}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>تحقق وافتح البوابة العامة</span>
+            </button>
+            
+            <p className="text-[10px] text-center text-stone-400 leading-relaxed font-light">
+              * بمجرد تسجيل الدخول بكلمة المرور الموحدة، يتم ترخيص متصفحك تلقائياً لمدة 24 ساعة دون الحاجة لإعادة الإدخال.
+            </p>
+          </motion.form>
+        ) : (
+          /* Phase 2: Personal Login / Registration Form */
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-6"
+          >
+            {/* Tabs Trigger */}
+            <div className="flex bg-stone-100 dark:bg-stone-950 p-1.5 rounded-2xl">
+              <button
+                onClick={() => setIsLoginTab(true)}
+                className={`flex-1 py-2 text-center rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  isLoginTab
+                    ? "bg-white dark:bg-stone-900 text-brand-primary dark:text-brand-secondary shadow-sm"
+                    : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
+                }`}
+              >
+                تسجيل الدخول
+              </button>
+              <button
+                onClick={() => setIsLoginTab(false)}
+                className={`flex-1 py-2 text-center rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  !isLoginTab
+                    ? "bg-white dark:bg-stone-900 text-brand-primary dark:text-brand-secondary shadow-sm"
+                    : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
+                }`}
+              >
+                إنشاء حساب سحابي
+              </button>
+            </div>
+
+            {/* Core Credentials Input */}
+            <form onSubmit={handleAuthSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني:</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                    required
+                  />
+                  <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">كلمة المرور الشخصية:</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                    required
+                  />
+                  <Key className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                </div>
+              </div>
+
+              {isLoginTab && (
+                <div className="text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
+                  >
+                    نسيت كلمة المرور الشخصية؟
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>جاري معالجة حسابك...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>{isLoginTab ? "تسجيل دخول آمن" : "تفعيل الحساب السحابي"}</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Forgot Password Modal popover */}
+      {showForgotModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white dark:bg-stone-900 p-6 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl max-w-sm w-full text-right space-y-4"
+          >
+            <div className="flex items-center gap-2 text-brand-primary dark:text-brand-secondary">
+              <Key className="w-5 h-5 shrink-0" />
+              <h3 className="font-bold text-base">استعادة كلمة المرور عبر البريد:</h3>
+            </div>
+            <p className="text-[11px] text-stone-400 leading-relaxed">
+              أدخل بريدك الشخصي وسيرسل لك نظام Supabase رابط استعادة وتحديث كلمة المرور لتعود فوراً إلى العمل.
+            </p>
+
+            <form onSubmit={handleForgotPassword} className="space-y-3">
+              <input
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full pl-4 pr-3 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                required
+              />
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(false)}
+                  className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-white text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  أرسل الرابط
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+    </div>
+  );
+};

@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Tajawal", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  
+  --color-brand-primary: #235355;
+  --color-brand-secondary: #0DF1BA;
+}
+
+/* Custom background styles for branding and luxury feel */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #235355 0%, #153233 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, #111e1f 0%, #080f10 100%);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(35, 83, 85, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(35, 83, 85, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #235355;
+}
+
+/* Glowing effects */
+.glow-secondary {
+  box-shadow: 0 0 20px rgba(13, 241, 186, 0.15);
+}
+
+.glow-secondary-hover:hover {
+  box-shadow: 0 0 25px rgba(13, 241, 186, 0.35);
+}
+
+/* Skeleton animation */
+@keyframes pulse-shimmer {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .4;
+  }
+}
+
+.animate-shimmer {
+  animation: pulse-shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "المنصة الدراسية التفاعلية الذكية",
+  "description": "منصة تفاعلية ذكية متكاملة لتحليل محاضرات التسويق واستخراج الاستراتيجيات وبناء الإعلانات بدعم الذكاء الاصطناعي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
