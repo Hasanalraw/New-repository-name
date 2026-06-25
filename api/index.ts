@@ -36,16 +36,27 @@ app.get("/api/health", (req, res) => {
 app.post("/api/gemini/analyze", async (req, res) => {
   try {
     const { content, sectionId, sectionTitle } = req.body;
+    const headerKey = req.headers["x-gemini-api-key"] as string;
+    const userApiKey = headerKey?.trim() || geminiApiKey;
 
     if (!content) {
       return res.status(400).json({ error: "محتوى المحاضرة مطلوب للتحليل" });
     }
 
-    if (!ai) {
-      return res.status(503).json({ 
-        error: "مفتاح Gemini API غير مهيأ بعد. يرجى تفعيله في الإعدادات أو استخدام البيانات الأساسية المتاحة." 
+    if (!userApiKey) {
+      return res.status(401).json({ 
+        error: "مفتاح Gemini API غير مهيأ بعد. يرجى تزويد المنصة بمفتاحك الخاص في نافذة التخصيص للمتابعة." 
       });
     }
+
+    const client = new GoogleGenAI({
+      apiKey: userApiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
 
     const systemInstruction = `أنت خبير تسويق واستراتيجي أعمال ذكي ومتحدث باللغة العربية الفصحى الفخمة والمنسقة.
 مهمتك هي تحليل نص المحاضرة/الدرس التعليمي المدخل واستخراج خطة عمل مخصصة للقسم المحدد: "${sectionTitle}" (المعرف: ${sectionId}).
@@ -97,7 +108,7 @@ app.post("/api/gemini/analyze", async (req, res) => {
 ${content}
 ------------------`;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: "gemini-3.5-flash",
       contents: prompt,
       config: {
@@ -122,12 +133,23 @@ ${content}
 app.post("/api/gemini/assistant", async (req, res) => {
   try {
     const { sectionId, sectionTitle, userAnswers, currentQuestion } = req.body;
+    const headerKey = req.headers["x-gemini-api-key"] as string;
+    const userApiKey = headerKey?.trim() || geminiApiKey;
 
-    if (!ai) {
-      return res.status(503).json({
+    if (!userApiKey) {
+      return res.status(401).json({
         error: "الذكاء الاصطناعي غير متوفر حالياً. يرجى إعداد مفتاح API في الإعدادات."
       });
     }
+
+    const client = new GoogleGenAI({
+      apiKey: userApiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
 
     const systemInstruction = `أنت المساعد الذكي العائم لمنصة "المنصة الدراسية التفاعلية الذكية".
 مهمتك هي تقديم نصيحة ذهبية فورية، ذكية، وعميقة للمستخدم بناءً على القسم الذي يدرسه حالياً والبيانات التي أدخلها.
@@ -141,7 +163,7 @@ ${JSON.stringify(userAnswers || {}, null, 2)}
 
 أعطِ المستخدم نصيحة تسويقية استراتيجية فريدة لمساعدته على إكمال هذا العمل بذكاء، مع استخلاص توصية بناءً على المدخلات المكتوبة.`;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: "gemini-3.5-flash",
       contents: prompt,
       config: {
