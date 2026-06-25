@@ -1848,10 +1848,27 @@ export const SectionView: React.FC<SectionViewProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800">
-                  <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    مفتاح Gemini API نشط ومعدل
-                  </span>
+                  {localStorage.getItem(`custom_exercises_${sectionId}`) ? (
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem(`custom_exercises_${sectionId}`);
+                        loadDefaults();
+                        setShowUploadModal(false);
+                        setTranscriptText("");
+                        onToast("تم إلغاء التخصيص والعودة للمنهج الافتراضي للدرس بنجاح! 🔄", "success");
+                      }}
+                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl flex items-center gap-1 transition-all cursor-pointer border border-rose-200/20"
+                      disabled={isAnalyzing}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>إلغاء التخصيص والعودة للمنهج الأصلي</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      مفتاح Gemini API نشط ومعدل
+                    </span>
+                  )}
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => {
