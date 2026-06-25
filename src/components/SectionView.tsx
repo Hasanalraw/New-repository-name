@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowRight, Save, RotateCcw, Download, Sparkles, CheckCircle, 
   AlertTriangle, UploadCloud, FileText, Loader2, BookOpen, Trash2,
-  Quote, Users, Target, Compass, Award
+  Quote, Users, Target, Compass, Award, Video
 } from "lucide-react";
 import { defaultLectures } from "../data/defaultLectures";
 import { SmartGuide } from "./SmartGuide";
@@ -454,30 +454,44 @@ export const SectionView: React.FC<SectionViewProps> = ({
       baselineExercises = [
         {
           id: "ugc_videos",
-          label: "تخطيط إعلانات الفيديو القصير التفاعلي (UGC Video Ads):",
-          placeholder: "تصوير عميل يتحدث عن شكه الأولي قبل التجربة، ثم إظهار وجهه المنبهر بالنتائج أثناء استخدام لوحة التحكم الخاصة بنا...",
-          guideTitle: defaultMeta.tips[0].title,
-          guideDescription: defaultMeta.tips[0].description,
-          guidePoints: defaultMeta.tips[0].points,
-          guideQuote: defaultMeta.tips[0].quote
+          label: "1. تخطيط إعلانات الـ UGC لبناء الثقة ومواقف الـ POV التي يعيشها العميل يومياً:",
+          placeholder: "أدخل تفاصيل ومواصفات إعلان الـ UGC ومواقف الـ POV لمنتجك:\n1. إعلان UGC (رأي زبون حقيقي): صبية تظهر بوجهها تتحدث عن خوفها من تجربة المنتجات، ثم ترينا كيف زال احمرار وجهها بعد دقيقتين من وضع الكريم.\n2. الهدف من الـ UGC: بناء مصداقية عالية وإزالة الشك (الناس تصدق الناس، وليس البراند نفسه).\n3. إعلان POV (موقف العميل): مشهد بصري لشاب عادي يتأفف من وجع ظهره أثناء ركوب سيارته للذهاب للعمل صباحاً.\n4. فكرة الـ POV: إظهار لقطة عفوية تجعل العميل يقول في نفسه فوراً 'هذا أنا!'، ويشعر أن الإعلان يخاطب تفاصيل يومه.",
+          guideTitle: "إعلانات الـ UGC ومواقف الـ POV",
+          guideDescription: "تحديد الصيغة الإعلانية المناسبة لزاويتك التسويقية هو سر القبول. الـ UGC يزيل الشك والـ POV يجذب الانتباه بجعل العميل يسقط المشهد على نفسه مباشرة.",
+          guidePoints: [
+            "القاعدة الذهبية: لا تختار صيغة الإعلان لأنك تحبها، بل اخترها لأن الزاوية التسويقية تحتاجها.",
+            "استخدم الـ UGC (محتوى المستخدمين) لبناء الثقة والرد على اعتراضات الجودة والأمان (الناس تصدق الناس مو الـ brand).",
+            "استخدم الـ POV (وجهة نظر العميل) في أول الإعلان لجذب انتباه العميل المنشغل بتصوير موقف مألوف يعيشه يومياً.",
+            "احرص على ألا تبدو لقطات الـ POV مصطنعة بل عفوية وواقعية بالكامل."
+          ],
+          guideQuote: "لا تختار الصيغة لأنك بتحبها.. اختار الصيغة لأن الزاوية بتحتاجها. الناس بتصدق الناس مو الـ brand."
         },
         {
           id: "carousel_graphics",
-          label: "منشورات الكاروسيل الطويلة والشرائح التعليمية القيمة:",
-          placeholder: "كاروسيل من 5 صفحات: 1. المشكلة الصادمة، 2. الخطأ الأول الشائع، 3. التحليل الفني، 4. خطوات التجنب، 5. الدعوة للشراء الفورية...",
-          guideTitle: defaultMeta.tips[1].title,
-          guideDescription: defaultMeta.tips[1].description,
-          guidePoints: defaultMeta.tips[1].points,
-          guideQuote: defaultMeta.tips[1].quote
+          label: "2. صياغة سيناريو القصة المؤثرة (Storytelling) وإعلانات التعليم الطويلة (VSLs):",
+          placeholder: "خطط لسيناريو قصة أو إعلان تعليمي طويل لمنتجك:\n1. سيناريو قصة (Story ad): 'كان خالد يعاني من تقطع النوم وتشنج الرقبة كل صباح.. جرب العلاج الطبيعي والمساجات دون فائدة، حتى عثر بالصدفة على مخدتنا الطبية وغيرت نومه ويومه بالكامل'.\n2. إعلان تعليمي طويل (VSL): فيديو مدته 3 دقائق يشرح فيه خبير رقبة أو دكتور المشاكل الصحية للوسائد التقليدية وتأثيرها على فقرات الرقبة، ثم يقدم الميكانيكية الفريدة للمخدة الطبية.\n3. الهدف من الـ VSL: البيع عن طريق التعليم وتقديم المعرفة والوعي (بيع من دون أن تبيع مباشرة).",
+          guideTitle: "إعلانات القصص والفيديوهات التعليمية (VSL)",
+          guideDescription: "القصة تبني ارتباطاً عاطفياً قوياً وتُشكل براند طويل المدى، بينما الفيديوهات التعليمية (VSLs) تبيع بطرح المشكلة العميقة وتفكيكها وتقديم الحل العملي لجمهور واعٍ.",
+          guidePoints: [
+            "صغ إعلان القصة (Storytelling) بـ: بداية (المشكلة الحقيقية)، وسط (الصراع والحلول الفاشلة)، ونهاية (الحل المكتشف والتحول).",
+            "استخدم الفيديوهات التعليمية الطويلة (VSL) لشرح آليات معقدة أو الرد على أسئلة هامة في المادة الإعلانية.",
+            "تجنب البيع المباشر الجاف في الإعلانات التعليمية؛ ركز على توضيح أسباب المشكلة والنتائج المستقبلية المترتبة عليها ليثق العميل بك كخبير."
+          ],
+          guideQuote: "العالم بتحب تسمع storyات، ووقت تسمع قصة شخص بتسقطها كتير على حالها.. والفيديو التعليمي بيخليك تبيع من دون ما تبيع."
         },
         {
           id: "case_studies",
-          label: "صياغة دراسات الحالة العميقة وشهادات العملاء الحية:",
-          placeholder: "قصة 'خالد' تاجر العطور السلكي الذي كاد يغلق مشروعه، وكيف تضاعفت أرباحه 4 مرات في 20 يوماً باستخدام قمع مبيعاتنا الخاص...",
-          guideTitle: defaultMeta.tips[1].title,
-          guideDescription: defaultMeta.tips[1].description,
-          guidePoints: defaultMeta.tips[1].points,
-          guideQuote: defaultMeta.tips[1].quote
+          label: "3. تخطيط إعلانات قبل وبعد (Before/After)، مقارنة نحن ضد غيرنا، وإعلان المؤسس (Founder Ad):",
+          placeholder: "خطط لأشكال المقارنة وعرض النتائج المباشرة للبراند:\n1. إعلان قبل وبعد (Before/After): إظهار فتاة بوجه شاحب ومنتفخ تحت عينيها صباحاً، ثم بعد استخدام رول المساج يختفي الانتفاخ تماماً وتشرق بشرتها.\n2. إعلان مقارنة (نحن ضد غيرنا): مقارنة 'الطريقة الجديدة والقديمة' بناءً على البساطة (scoop واحد AG1 بدلاً من 30 علبة مكملات مبعثرة).\n3. إعلان المؤسس (Founder Ad): يخرج مؤسس المتجر بنفسه ليروي القصة الشخصية والأسباب والصراعات التي دفعته لابتكار هذا المنتج وسد الفجوة في السوق.\n4. استراتيجية اختبار الزاوية الواحدة: سنأخذ زاوية تسويقية واحدة ونحولها إلى 5 أشكال إعلانية مختلفة (UGC, POV, Story, Comparison, Before/After) لمعرفة الشكل الذي يحقق أفضل ROAS.",
+          guideTitle: "إعلانات المقارنة والنتائج وإعلانات المؤسس",
+          guideDescription: "المقارنة البصرية والـ Before/After تبني رغبة فورية وقوية بفضل النتائج الملموسة. وإعلان المؤسس (Founder Ad) يبني مصداقية وثقة طويلة المدى ويحقق أرقام مبيعات وعوائد استثنائية (ROAS).",
+          guidePoints: [
+            "عند تخطيط المقارنة (نحن ضد غيرنا)، قارن بين زوايا العميل (مثل البساطة، التكلفة، الألم) وليس فقط قائمة المكونات الجافة.",
+            "احرص على أن تكون صور الـ Before/After حقيقية وغير معدلة ببرامج لتفادي فقدان ثقة العميل أو رفض الإعلان من المنصات.",
+            "استخدم إعلان المؤسس (Founder Ad) في فترات المواسم والتخفيضات الكبرى كـ Black Friday لبناء ارتباط شخصي عميق وكسر حاجز الخوف الشائع.",
+            "طبق قاعدة: زاوية تسويقية واحدة يمكن تحويلها لعشرة أشكال إعلانية مختلفة لتوسيع الاستهداف والـ Scaling بنجاح."
+          ],
+          guideQuote: "إعلانات المؤسسين (Founder Ads) بتعطي أرقام مجنونة وعوائد ROAS عالية جداً.. الناس بتحب تعرف مين ورا المنتج والـ brand."
         }
       ];
     } else if (sectionId === "hooksScripts") {
@@ -1443,6 +1457,65 @@ export const SectionView: React.FC<SectionViewProps> = ({
                   ].map((pillar) => (
                     <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-indigo-500/30 transition-all duration-200 text-right">
                       <div className="w-6 h-6 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
+                        {pillar.num}
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Strategic Banner for Content Formats */}
+        {sectionId === "contentFormats" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-950 via-slate-900 to-purple-950 border border-teal-500/20 p-6 sm:p-8 text-white shadow-xl shadow-teal-950/20 text-right"
+            dir="rtl"
+          >
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Header section with quote */}
+              <div className="border-b border-teal-500/20 pb-5">
+                <div className="flex items-center gap-3 mb-4 justify-end">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-teal-400 font-bold block">الرؤية الاستراتيجية للصيغ الإعلانية</span>
+                    <h2 className="text-xl font-black text-white">منظومة أشكال المحتوى والصيغ الإعلانية</h2>
+                  </div>
+                  <div className="p-2.5 bg-teal-500/20 rounded-2xl border border-teal-400/30 text-teal-300">
+                    <Video className="w-6 h-6" />
+                  </div>
+                </div>
+                
+                <div className="relative bg-slate-950/40 border-r-4 border-amber-500 p-4 rounded-l-2xl rounded-r-md my-2 text-right">
+                  <Quote className="absolute top-2 left-2 w-8 h-8 text-white/5 pointer-events-none" />
+                  <p className="text-sm sm:text-base font-medium italic text-stone-200 leading-relaxed pl-6">
+                    "لا تختار الصيغة لأنك بتحبها.. اختار الصيغة لأن الزاوية بتحتاجها. الناس بتصدق الناس مو الـ brand"
+                  </p>
+                  <span className="block text-[10px] text-amber-400 mt-2 font-bold">— من اقتباسات المحاضرة العملية</span>
+                </div>
+              </div>
+
+              {/* Five pillars of content formats */}
+              <div>
+                <h3 className="text-xs font-bold text-teal-300 mb-3 text-right">ركائز منظومة الصيغ الإعلانية:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3" dir="rtl">
+                  {[
+                    { num: "١", title: "الصيغة ضد الكلمات", desc: "نفس الرسالة والكلمات بصيغة مختلفة تعطي نتائج وعوائد مختلفة تماماً." },
+                    { num: "٢", title: "أشكال الإعلانات الكبرى", desc: "استخدام الـ UGC لبناء الثقة، والـ POV لمشاهد 'هذا أنا'، والقصص للارتباط العاطفي." },
+                    { num: "٣", title: "التعليم والـ VSL", desc: "البيع بدون بيع مباشر عن طريق شرح المشكلة وميكانيكيتها في فيديو طويل." },
+                    { num: "٤", title: "المقارنة والمؤسس", desc: "مقارنة الطريقة القديمة والجديدة بصرية، وقصة المؤسس (Founder Ad) للمصداقية الفائقة." },
+                    { num: "٥", title: "١ زاوية = ١٠ إعلانات", desc: "تفريع الزاوية لعدة صيغ (على الأقل 5 صيغ لكل زاوية) لاكتشاف Winning Creative." }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-teal-500/30 transition-all duration-200 text-right">
+                      <div className="w-6 h-6 bg-teal-500/20 border border-teal-400/30 text-teal-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
                         {pillar.num}
                       </div>
                       <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
