@@ -223,8 +223,8 @@ export default function App() {
     
     // Check if custom AI exercises exist for this section
     const savedCustom = localStorage.getItem(`custom_exercises_${sectionId}`);
-    let totalFieldsCount = 5; // Baseline for competitors is 5, others are 3
-    let fieldIds = ["comp_classification", "comp_discovery_methods", "comp_store_analysis", "comp_ad_creatives", "comp_strategy_transition"]; // default ids
+    let totalFieldsCount = 11; // Baseline for competitors is 11, others are 3 or 4
+    let fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"]; // default ids
 
     if (savedCustom) {
       try {
@@ -237,7 +237,7 @@ export default function App() {
     } else {
       // Get correct baseline field ids for the default questions
       if (sectionId === "competitors") {
-        fieldIds = ["comp_classification", "comp_discovery_methods", "comp_store_analysis", "comp_ad_creatives", "comp_strategy_transition"];
+        fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"];
       } else if (sectionId === "targetAudience") {
         fieldIds = ["audience_human_definition", "pain_moment_scenario", "deep_research_dictionary", "five_big_questions"];
       } else if (sectionId === "marketingAngles") {
@@ -281,14 +281,14 @@ export default function App() {
       const answers = answersObj[sec.id] || {};
       
       const savedCustom = localStorage.getItem(`custom_exercises_${sec.id}`);
-      let fieldIds = ["comp_classification", "comp_discovery_methods", "comp_store_analysis", "comp_ad_creatives", "comp_strategy_transition"];
+      let fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"];
       if (savedCustom) {
         try {
           const parsed = JSON.parse(savedCustom);
           fieldIds = parsed.exercises.map((e: any) => e.id);
         } catch {}
       } else {
-        if (sec.id === "competitors") fieldIds = ["comp_classification", "comp_discovery_methods", "comp_store_analysis", "comp_ad_creatives", "comp_strategy_transition"];
+        if (sec.id === "competitors") fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"];
         else if (sec.id === "targetAudience") fieldIds = ["audience_human_definition", "pain_moment_scenario", "deep_research_dictionary", "five_big_questions"];
         else if (sec.id === "marketingAngles") fieldIds = ["features_vs_angles", "angle_sources_extraction", "seven_levels_depth", "testing_scaling_strategy"];
         else if (sec.id === "messagePillars") fieldIds = ["authority_trust", "speed_ease", "risk_reversal"];
@@ -328,11 +328,17 @@ export default function App() {
         // Fallback default questions labels
         if (sec.id === "competitors") {
           exerciseFields = [
-            { id: "comp_classification", label: "تحديد وتصنيف منافسيك (نفس المنتج 100%، منتجات مشابهة 60-70%، وحلول نفس المشكلة)" },
-            { id: "comp_discovery_methods", label: "طرق وقنوات العثور على المنافسين (Google Search, Facebook Library, TikTok, Amazon)" },
-            { id: "comp_store_analysis", label: "تحليل صفحات منتجات المنافسين (الرسائل، الصور والفيديوهات، السعر والعرض، الثقة والاستعجال)" },
-            { id: "comp_ad_creatives", label: "تحليل إعلانات المنافسين (أشكال الإعلانات، الخطافات الأكثر تكراراً، والفرص والاعتراضات غير المجابة)" },
-            { id: "comp_strategy_transition", label: "تحويل التحليل لاستراتيجيتك الخاصة (الجمهور، التموضع والوعد، العرض الخارق، 3 زوايا إعلانية، و5 تحسينات لمتجرك)" }
+            { id: "comp_direct_100", label: "المنافس المباشر (مطابق بنسبة 100%)" },
+            { id: "comp_similar_70", label: "المنافس المشابه (بنسبة 60% إلى 70%)" },
+            { id: "comp_alternative_solution", label: "منافس الحل البديل (نفس المشكلة بمنتج مختلف)" },
+            { id: "comp_search_keywords", label: "الكلمات المفتاحية وقنوات البحث المستخدمة" },
+            { id: "comp_messaging_analysis", label: "الرسائل التسويقية (Messaging) والوجع المستهدف" },
+            { id: "comp_visuals_analysis", label: "الصور والفيديوهات (Visuals) وطريقة العرض البصري" },
+            { id: "comp_pricing_offer", label: "السعر والعروض المقدمة (Price & Offer)" },
+            { id: "comp_trust_urgency", label: "عناصر كسب الثقة ومحفزات الاستعجال" },
+            { id: "comp_ads_hooks", label: "تحليل الإعلانات والخطافات (Hooks) الأكثر نجاحاً" },
+            { id: "comp_opportunities_gaps", label: "الفرص والثغرات غير المستغلة (Missing Elements)" },
+            { id: "comp_our_positioning", label: "التموضع واستراتيجية التميز الخاصة بنا (Framework)" }
           ];
         } else if (sec.id === "targetAudience") {
           exerciseFields = [
