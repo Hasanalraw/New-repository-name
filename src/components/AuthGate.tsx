@@ -68,8 +68,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({
         
         {/* Branding Header */}
         <div className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-brand-primary/10 dark:bg-brand-secondary/10 text-brand-primary dark:text-brand-secondary rounded-2xl flex items-center justify-center shadow-lg">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="mx-auto w-16 h-16 bg-brand-primary/10 dark:bg-brand-secondary/10 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+            <img src="/favicon.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <h2 className="text-2xl font-black text-brand-primary dark:text-white">المنصة الدراسية الذكية</h2>
           <p className="text-stone-500 dark:text-stone-400 text-xs font-light">

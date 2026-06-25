@@ -56,8 +56,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => { onNavigate(null); setIsMobileOpen(false); }}
           className="flex items-center gap-3 pb-5 border-b border-white/10 cursor-pointer group"
         >
-          <div className="w-10 h-10 bg-brand-secondary text-black rounded-xl flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-105 duration-200 transition-transform">
-            <Icons.Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 bg-brand-secondary text-black rounded-xl flex items-center justify-center font-bold text-lg shadow-lg group-hover:scale-105 duration-200 transition-transform overflow-hidden">
+            <img src="/favicon.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <h2 className="font-black text-sm text-white tracking-wide">المنصة الدراسية الذكية</h2>
@@ -217,8 +217,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => onNavigate(null)}
           className="flex items-center gap-2 cursor-pointer"
         >
-          <div className="w-7 h-7 bg-brand-secondary text-black rounded-lg flex items-center justify-center font-bold text-sm">
-            <Icons.Sparkles className="w-4 h-4" />
+          <div className="w-7 h-7 bg-brand-secondary text-black rounded-lg flex items-center justify-center font-bold text-sm overflow-hidden">
+            <img src="/favicon.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <span className="font-black text-xs tracking-wide">المنصة الدراسية الذكية</span>
         </div>
