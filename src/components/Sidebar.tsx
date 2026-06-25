@@ -17,6 +17,7 @@ interface SidebarProps {
   darkMode: boolean;
   onToggleDarkMode: () => void;
   userName?: string;
+  onOpenSettings?: () => void;
   id?: string;
 }
 
@@ -29,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   darkMode,
   onToggleDarkMode,
   userName,
+  onOpenSettings,
   id
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -65,15 +67,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* User Info Capsule */}
         {userName && (
-          <div className="bg-white/10 dark:bg-black/20 p-3 rounded-2xl flex items-center gap-2.5 border border-white/5">
-            <div className="w-7 h-7 bg-brand-secondary/20 rounded-full flex items-center justify-center text-brand-secondary">
-              <Icons.User className="w-4 h-4" />
+          <button 
+            onClick={onOpenSettings}
+            className="w-full text-right bg-white/10 dark:bg-black/20 hover:bg-white/15 dark:hover:bg-black/35 p-3 rounded-2xl flex items-center justify-between border border-white/5 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-7 h-7 bg-brand-secondary/20 rounded-full flex items-center justify-center text-brand-secondary">
+                <Icons.User className="w-4 h-4" />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-[11px] font-bold text-white truncate">{userName.split("@")[0]}</p>
+                <p className="text-[8px] text-stone-300">حساب سحابي نشط</p>
+              </div>
             </div>
-            <div className="overflow-hidden">
-              <p className="text-[11px] font-bold text-white truncate">{userName}</p>
-              <p className="text-[8px] text-stone-300">حساب سحابي نشط</p>
-            </div>
-          </div>
+            <Icons.Settings className="w-3.5 h-3.5 text-stone-300 group-hover:text-brand-secondary group-hover:rotate-45 duration-300 transition-all" />
+          </button>
         )}
 
         {/* Navigation Items (The 7 Modules) */}

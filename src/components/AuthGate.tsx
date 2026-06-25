@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key } from "lucide-react";
+import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
 interface AuthGateProps {
@@ -19,32 +19,27 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   onToast,
   id
 }) => {
-  // Tab selector: "unified" for direct passcode, "personal" for cloud accounts
-  const [activeTab, setActiveTab] = useState<"unified" | "personal">("unified");
-
-  // Phase 1: Direct Passcode (Unified Login)
+  // Phase 1: Portal Lock (requires universal passcode)
+  const [isPortalUnlocked, setIsPortalUnlocked] = useState(false);
   const [portalPassword, setPortalPassword] = useState("");
   const [portalError, setPortalError] = useState("");
 
-  // Phase 2: Personal Cloud Account
-  const [isLoginTab, setIsLoginTab] = useState(true);
+  // Phase 2: Personal Cloud Login (requires pre-created account credentials)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Forgot Password
+  // Forgot Password Modal
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
 
   useEffect(() => {
-    // Check if the user is already authenticated (unified or personal)
-    const checkUser = async () => {
-      const isUnified = localStorage.getItem("is_logged_in_as_unified") === "true";
-      if (isUnified) {
-        onAuthenticated({ id: "unified-user", email: "unified@portal.com", isUnified: true });
-        return;
-      }
+    // Check if the portal is already unlocked
+    const unlocked = localStorage.getItem("portal_unlocked") === "true";
+    setIsPortalUnlocked(unlocked);
 
+    // Check if user session already exists
+    const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         onAuthenticated(data.user);
@@ -53,22 +48,21 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     checkUser();
   }, []);
 
-  // Handle Unified Code Login
-  const handleUnifiedLoginSubmit = (e: React.FormEvent) => {
+  // Handle Phase 1: Verify Universal Passcode
+  const handlePortalUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (portalPassword === "HasDTB2an2026?") {
-      sessionStorage.setItem("portal_unlocked_at", "true");
-      localStorage.setItem("is_logged_in_as_unified", "true");
-      onToast("تم تسجيل الدخول السريع بالرمز الموحد بنجاح! أهلاً بك.", "success");
-      onAuthenticated({ id: "unified-user", email: "unified@portal.com", isUnified: true });
+      localStorage.setItem("portal_unlocked", "true");
+      setIsPortalUnlocked(true);
+      onToast("تم فك قفل المنصة بنجاح! يرجى تسجيل الدخول بحسابك الشخصي.", "success");
     } else {
       setPortalError("الرمز الموحد غير صحيح! يرجى التأكد من الرمز والمحاولة مجدداً.");
-      onToast("فشل التحقق من الرمز الموحد للمنصة", "error");
+      onToast("الرمز الموحد لفك القفل خاطئ", "error");
     }
   };
 
-  // Handle Personal Account (Supabase) Sign In or Sign Up
-  const handleAuthSubmit = async (e: React.FormEvent) => {
+  // Handle Phase 2: Log in with personal cloud credentials
+  const handlePersonalLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       onToast("يرجى ملء جميع الحقول المطلوبة", "error");
@@ -78,46 +72,34 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      if (isLoginTab) {
-        // Sign In
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
 
-        if (error) throw error;
-        
-        onToast("أهلاً بك مجدداً! تم تسجيل دخولك الشخصي بنجاح.", "success");
-        onAuthenticated(data.user);
-      } else {
-        // Sign Up
-        const { data, error } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-        });
-
-        if (error) throw error;
-
-        onToast("تهانينا! تم إنشاء حسابك الشخصي بنجاح وجاري إعداد لوحة التحكم.", "success");
-        onAuthenticated(data.user);
-      }
+      if (error) throw error;
+      
+      onToast("أهلاً بك! تم تسجيل دخولك الشخصي بنجاح ومزامنة دراستك.", "success");
+      onAuthenticated(data.user);
     } catch (err: any) {
       console.error(err);
-      onToast(err.message || "حدث خطأ أثناء المصادقة", "error");
+      onToast(err.message || "فشل تسجيل الدخول. يرجى التأكد من البريد وكلمة المرور.", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Reset Password Request
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  // Handle Reset Password Request (For forgotten passwords)
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail.trim()) {
       onToast("يرجى كتابة بريدك الإلكتروني", "error");
       return;
     }
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase());
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase(), {
+        redirectTo: window.location.origin
+      });
       if (error) throw error;
       onToast("تم إرسال رابط استعادة كلمة المرور لبريدك الإلكتروني بنجاح! 📨", "success");
       setShowForgotModal(false);
@@ -125,6 +107,15 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     } catch (err: any) {
       onToast(err.message || "فشل إرسال رابط الاستعادة", "error");
     }
+  };
+
+  // Relock portal option for safety
+  const handleRelockPortal = () => {
+    localStorage.removeItem("portal_unlocked");
+    setIsPortalUnlocked(false);
+    setPortalPassword("");
+    setPortalError("");
+    onToast("تم قفل بوابة المنصة بأمان.", "info");
   };
 
   return (
@@ -139,52 +130,29 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           <div className="mx-auto w-16 h-16 bg-brand-primary/10 dark:bg-brand-secondary/10 text-brand-primary dark:text-brand-secondary rounded-2xl flex items-center justify-center shadow-lg">
             <ShieldCheck className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-brand-primary dark:text-white">بوابة الوصول والدراسة الذكية</h2>
+          <h2 className="text-2xl font-black text-brand-primary dark:text-white">المنصة الدراسية الذكية</h2>
           <p className="text-stone-500 dark:text-stone-400 text-xs font-light">
-            اختر وسيلة الدخول المناسبة لك لبدء بناء استراتيجيتك التسويقية
+            {isPortalUnlocked 
+              ? "سجل دخولك لحسابك الشخصي المستقل لمتابعة دراستك" 
+              : "المنصة محمية ومغلقة. يرجى إدخال الرمز الموحد لفك القفل"
+            }
           </p>
         </div>
 
-        {/* Tab switcher: Unified Code vs Personal Cloud */}
-        <div className="flex bg-stone-100 dark:bg-stone-950 p-1.5 rounded-2xl border border-stone-200/50 dark:border-stone-800/50">
-          <button
-            onClick={() => setActiveTab("unified")}
-            className={`flex-1 py-2.5 text-center rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              activeTab === "unified"
-                ? "bg-brand-primary text-white dark:bg-brand-secondary dark:text-black shadow-md"
-                : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>الرمز الموحد (دخول سريع)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("personal")}
-            className={`flex-1 py-2.5 text-center rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-              activeTab === "personal"
-                ? "bg-brand-primary text-white dark:bg-brand-secondary dark:text-black shadow-md"
-                : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
-            }`}
-          >
-            <Key className="w-4 h-4" />
-            <span>حساب سحابي شخصي</span>
-          </button>
-        </div>
-
-        {/* Dynamic Form Render */}
+        {/* Dynamic Form Render based on Portal Unlocked state */}
         <AnimatePresence mode="wait">
-          {activeTab === "unified" ? (
+          {!isPortalUnlocked ? (
             <motion.form
-              key="unified-form"
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 15 }}
-              transition={{ duration: 0.15 }}
-              onSubmit={handleUnifiedLoginSubmit}
+              key="portal-lock-form"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              onSubmit={handlePortalUnlockSubmit}
               className="space-y-5"
             >
               <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">الرمز الموحد للمنصة:</label>
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">الرمز الموحد لفك قفل المنصة:</label>
                 <div className="relative">
                   <input
                     type="password"
@@ -193,7 +161,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                       setPortalPassword(e.target.value);
                       setPortalError("");
                     }}
-                    placeholder="أدخل الرمز الموحد (مثال: HasDTB2an2026?)..."
+                    placeholder="أدخل الرمز الموحد المعتمد للمنصة..."
                     className="w-full pl-4 pr-10 py-3.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
                     required
                   />
@@ -207,49 +175,31 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                 className="w-full py-3.5 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>تحقق ودخول مباشر وسريع للمنصة</span>
+                <span>التحقق وفك قفل بوابة المنصة</span>
               </button>
               
               <div className="bg-stone-50 dark:bg-stone-950/40 p-4 rounded-xl border border-stone-200/50 dark:border-stone-800/40 text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed font-light">
-                <strong className="text-brand-primary dark:text-brand-secondary block mb-1">💡 ميزة الدخول السريع بالرمز الموحد:</strong>
-                تسمح لك بالدخول الفوري والدراسة دون حاجة لإنشاء حساب أو بريد إلكتروني، مع حفظ تقدمك التلقائي بشكل آمن محلياً على جهازك.
+                <strong className="text-brand-primary dark:text-brand-secondary block mb-1">🔒 بوابة حماية المنصة:</strong>
+                تم دمج هذا القفل الأمني لضمان عدم وصول أي زائر عشوائي من الخارج إلى صفحة تسجيل الدخول أو إثقال خوادم المنصة.
               </div>
             </motion.form>
           ) : (
             <motion.div
-              key="personal-form"
-              initial={{ opacity: 0, x: 15 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -15 }}
-              transition={{ duration: 0.15 }}
+              key="personal-login-form"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              {/* Inner Tabs: Sign In vs Sign Up */}
-              <div className="flex bg-stone-100 dark:bg-stone-950 p-1 rounded-xl">
-                <button
-                  onClick={() => setIsLoginTab(true)}
-                  className={`flex-1 py-1.5 text-center rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    isLoginTab
-                      ? "bg-white dark:bg-stone-900 text-brand-primary dark:text-brand-secondary shadow-sm"
-                      : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
-                  }`}
-                >
-                  تسجيل دخول
-                </button>
-                <button
-                  onClick={() => setIsLoginTab(false)}
-                  className={`flex-1 py-1.5 text-center rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    !isLoginTab
-                      ? "bg-white dark:bg-stone-900 text-brand-primary dark:text-brand-secondary shadow-sm"
-                      : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
-                  }`}
-                >
-                  إنشاء حساب سحابي
-                </button>
+              {/* Login Title Accent */}
+              <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
+                <span className="text-xs font-black text-stone-700 dark:text-stone-300">تسجيل الدخول للحساب الشخصي</span>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 dark:text-brand-secondary px-2 py-0.5 rounded-full font-bold">بوابة مغلقة ومؤمنة ✓</span>
               </div>
 
               {/* Email & Password Form */}
-              <form onSubmit={handleAuthSubmit} className="space-y-4">
+              <form onSubmit={handlePersonalLoginSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
                   <div className="relative">
@@ -280,17 +230,15 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                   </div>
                 </div>
 
-                {isLoginTab && (
-                  <div className="text-left">
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotModal(true)}
-                      className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
-                    >
-                      نسيت كلمة المرور الشخصية؟
-                    </button>
-                  </div>
-                )}
+                <div className="text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
+                  >
+                    نسيت كلمة المرور الشخصية؟
+                  </button>
+                </div>
 
                 <button
                   type="submit"
@@ -300,16 +248,27 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>جاري المعالجة والمزامنة السحابية...</span>
+                      <span>جاري التحقق والمزامنة السحابية...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      <span>{isLoginTab ? "تسجيل دخول شخصي" : "تفعيل الحساب ومزامنة الدراسة"}</span>
+                      <span>تسجيل دخول شخصي للوحة التحكم</span>
                     </>
                   )}
                 </button>
               </form>
+
+              {/* Back to passcode button */}
+              <div className="text-center pt-2">
+                <button
+                  onClick={handleRelockPortal}
+                  className="text-[10px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                >
+                  <span>قفل البوابة والعودة لشاشة الرمز الموحد</span>
+                  <ChevronLeft className="w-3 h-3" />
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -331,7 +290,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               أدخل بريدك الإلكتروني وسيرسل لك نظام المصادقة السحابية رابط استعادة وتحديث كلمة المرور لتعود فوراً إلى العمل.
             </p>
 
-            <form onSubmit={handleForgotPassword} className="space-y-3">
+            <form onSubmit={handleForgotPasswordSubmit} className="space-y-3">
               <input
                 type="email"
                 value={forgotEmail}

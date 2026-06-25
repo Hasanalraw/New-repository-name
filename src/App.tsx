@@ -15,6 +15,7 @@ import { Dashboard } from "./components/Dashboard";
 import { SectionView } from "./components/SectionView";
 import { FloatingAssistant } from "./components/FloatingAssistant";
 import { AuthGate } from "./components/AuthGate";
+import { AccountSettingsModal } from "./components/AccountSettingsModal";
 import { defaultLectures } from "./data/defaultLectures";
 import { supabase } from "./lib/supabaseClient";
 
@@ -30,6 +31,7 @@ export default function App() {
   const [userAnswers, setUserAnswers] = useState<Record<string, Record<string, string>>>({});
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   
   // Password Recovery / Update password state
   const [showUpdatePassword, setShowUpdatePassword] = useState<boolean>(false);
@@ -929,6 +931,7 @@ export default function App() {
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
         userName={user?.email || "مستخدم"}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Content Area Container */}
@@ -999,6 +1002,15 @@ export default function App() {
           userAnswers={userAnswers}
         />
       )}
+
+      {/* Account Settings Modal */}
+      <AccountSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={user}
+        onLogout={handleLogout}
+        onToast={addToast}
+      />
 
     </div>
   );
