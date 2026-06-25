@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowRight, Save, RotateCcw, Download, Sparkles, CheckCircle, 
   AlertTriangle, UploadCloud, FileText, Loader2, BookOpen, Trash2,
-  Quote, Users, Target, Compass
+  Quote, Users, Target, Compass, Award
 } from "lucide-react";
 import { defaultLectures } from "../data/defaultLectures";
 import { SmartGuide } from "./SmartGuide";
@@ -410,30 +410,44 @@ export const SectionView: React.FC<SectionViewProps> = ({
       baselineExercises = [
         {
           id: "authority_trust",
-          label: "صياغة الركائز الرسائلية الأساسية للبراند (من 3 إلى 5 رسائل ثابتة تحدد صورة البراند والتحول المطلوب):",
-          placeholder: "مثال (براند مكملات غذائية مثل AG1):\n1. صحتك بدون تعقيد (الرسالة والوعد الكلي).\n2. التزام أسهل من أي روتين آخر (تسهيل وتثبيت العادة).\n3. راحة بال وأمان صحي (Scoop واحد يغطي كافة الأساسيات).\n4. خطوة يومية صغيرة لتغيير كبير (التكرار والاستمرارية).\n5. طاقة مستقرة ونشاط دائم (بدون توتر الكافيين)...",
-          guideTitle: defaultMeta.tips[0].title,
-          guideDescription: defaultMeta.tips[0].description,
-          guidePoints: defaultMeta.tips[0].points,
-          guideQuote: defaultMeta.tips[0].quote
+          label: "1. صياغة الركائز الرسائلية الأساسية للبراند بصيغة وعد ومبدأ (من 3 إلى 5 رسائل ثابتة تركز على التحول والشعور):",
+          placeholder: "أدخل الركائز الرسائلية الثابتة لبراندك (بدون سرد مكونات أو ميزات جافة):\n1. الركيزة الأولى (التحول الأساسي): 'صحتك من دون تعقيد' - رعاية صحتك وتحسينها بأقل مجهود.\n2. الركيزة الثانية (عادة أسهل): 'التزام أسهل من أي روتين' - إزالة عبء وتعب المتابعة اليومية عنك.\n3. الركيزة الثالثة (الأمان والسلام الداخلي): 'راحة بال وتغطية كاملة للأساسيات' - راحة ذهنية كاملة لأنك مغطى بالكامل.\n4. الركيزة الرابعة (التراكم الإيجابي): 'خطوة صغيرة يومياً للتحسن التراكمي' - التطور المستدام بدون ضغوط.\n5. الركيزة الخامسة (الشعور بالنشاط): 'طاقة مستقرة ونشاط دائم' - تركيز مستمر بدون خمول أو توتر قهوة.",
+          guideTitle: "طريقة صياغة الركائز الرسائلية للبراند",
+          guideDescription: "الرسائل أو الركائز (Messaging Pillars) هي الأفكار الثابتة التي تريد أن يربطها العميل باسمك لتصنع صورتك الذهنية في غيابه. يجب أن تُصاغ كوعود ومبادئ عاطفية تركز على التحول والشعور، لا على الفروقات التقنية الجافة.",
+          guidePoints: [
+            "صغ ركائزك (من 3 إلى 5 ركائز كحد أقصى) لتجنب التشتت وعشوائية الرسائل.",
+            "تأكد أن كل ركيزة تعبر عن وعد قوي ومبدأ واضح (مثل: صحتك بدون تعقيد، التزام أسهل).",
+            "تجنب ذكر أي تفاصيل تقنية أو ميزات جافة في الركيزة (مثال: لا تذكر 'يحتوي على 75 فيتامين'، بل قل 'راحة بال وغطيت كل الأساسيات').",
+            "اجعل الركائز قصيرة، واضحة، وقابلة للتكرار في متجرك، وإعلاناتك، ونبرة تواصلك الكاملة."
+          ],
+          guideQuote: "البراند تبعك هو اللي بيقوله الناس عنك وقت ما تكون إنت موجود بهيك غرفة. وهي وظيفة الرسائل الثابتة."
         },
         {
           id: "speed_ease",
-          label: "تحديد الفروق الجوهرية والوعود الثابتة مقابل مداخل وزوايا الإعلانات المقترحة لبراندك:",
-          placeholder: "مثال:\n- الركيزة الثابتة: 'صحتك بدون تعقيد'.\n- الزاوية التسويقية 1: 'التعب والإرهاق من كثرة علب المكملات وتناول 10 حبوب يومياً'.\n- الزاوية التسويقية 2: 'روتين صباحي سريع للغاية لا يتعدى 30 ثانية لتنشيط يومك بالكامل'.\n- الزاوية التسويقية 3: 'الحد الأدنى الفعال لحماية مناعتك وتحسين هضمك'...",
-          guideTitle: defaultMeta.tips[0].title,
-          guideDescription: defaultMeta.tips[0].description,
-          guidePoints: defaultMeta.tips[0].points,
-          guideQuote: defaultMeta.tips[0].quote
+          label: "2. تفريع الركائز الرسائلية الثابتة إلى زوايا تسويقية إعلانية متعددة ومبتكرة:",
+          placeholder: "اختر 3 ركائز من ركائز براندك وقم بتفريعها إلى زوايا تسويقية متعددة لإعلاناتك:\n- الركيزة الأولى: 'صحتك من دون تعقيد'.\n  <- زاوية 1 (الألم): التعب من كثرة علب الفيتامينات والحبوب وتناولها يومياً.\n  <- زاوية 2 (البساطة): روتين صباحي سريع لا يتعدى 30 ثانية لتغطية يومك بالكامل.\n  <- زاوية 3 (الحد الأدنى الفعال): الحصول على أقصى فائدة بأقل جهد تفكير.\n- الركيزة الثانية: 'التزام أسهل'.\n  <- زاوية 1 (الحلول الفاشلة): 'كنت أشتري المكملات وأنسى أخذها وتخرب في الدرج.. الحين scoop واحد بالماء وحلت المشكلة'.\n  <- زاوية 2 (الاشتراك الفعال): نظام اشتراك شهري يذكرك ويهتم بصحتك تلقائياً دون تفكير.\n- الركيزة الثالثة: 'راحة البال'.\n  <- زاوية 1 (تأنيب الضمير): 'أنا لست شخصاً مثالياً ولا آكل طعاماً صحياً دائماً، لكني أريد الاطمئنان على صحتي'.",
+          guideTitle: "تحويل الركائز إلى زوايا تسويقية",
+          guideDescription: "الركائز الرسائلية هي الأساس الثابت والمواضيع المشتركة، بينما الزوايا التسويقية هي المداخل النفسية المتغيرة التي تستخدمها لجذب انتباه العملاء من أبواب مختلفة لترسيخ هذه الرسائل.",
+          guidePoints: [
+            "ثبت الركيزة الرئيسية، ثم ابنِ تحتها زوايا إعلانية متعددة (ألم، خوف، نتيجة، اعتراض).",
+            "جرب إطلاق حملات إعلانية مختلفة؛ كل حملة تركز على ركيزة واحدة ولكن بزوايا ومداخل متعددة لمعرفة أيها يقنع العميل أكثر.",
+            "اجعل عناوين صفحات متجرك ووصف منتجاتك متطابقة مع ركائزك الثابتة، بينما تستخدم الزوايا المتنوعة في إعلانات السوشيال ميديا لجلب الزوار."
+          ],
+          guideQuote: "الزوايا بتخلي الزباين يفوتوا على متجرك، والرسائل هي اللي بتخليهم يتذكروا البراند تبعك.. وإذا تذكرك رح يشتري منك مرة وتنين وتلاتة."
         },
         {
           id: "risk_reversal",
-          label: "خطة تفادي الأخطاء التسويقية الشائعة وبناء صورة ذهنية طويلة المدى لجمهورك:",
-          placeholder: "مثال:\n- تفادي كثرة الرسائل: الالتزام بـ 4 رسائل واضحة فقط وعدم التشتت بفوائد تقنية دقيقة.\n- تجنب التركيز التقني: التركيز على 'التحول والشعور بالنشاط' بدلاً من الاكتفاء بسرد المكونات.\n- الاتساق والثبات: توحيد النبرة والأسلوب في كافة المنصات والمتجر لتبدو كبراند احترافي وموثوق ومستمر...",
-          guideTitle: (defaultMeta.tips[1] || defaultMeta.tips[0]).title,
-          guideDescription: (defaultMeta.tips[1] || defaultMeta.tips[0]).description,
-          guidePoints: (defaultMeta.tips[1] || defaultMeta.tips[0]).points,
-          guideQuote: (defaultMeta.tips[1] || defaultMeta.tips[0]).quote
+          label: "3. خطة تفادي الأخطاء الكارثية الأربعة في رسائل البراند وبناء صورة ذهنية مستدامة:",
+          placeholder: "أدخل خطة متجرنا لتفادي الأخطاء الكارثية الأربعة بناءً على الدرس:\n1. تجنب التشتت ورسائل الميزات الكثيرة: سنثبت 3 رسائل فقط لمتجرنا بدلاً من التشتيت بعشرات الفوائد العشوائية.\n2. تجنب بناء الرسائل على ميزات تقنية ضعيفة: لن نتحدث عن 'عدد المكونات' كرسالة براند، بل سنركز على 'تحول حياة العميل وراحته'.\n3. تجنب الرسائل المتناقضة: سنحافظ على أسلوب موحد (مثال: نبرة بسيطة وعملية في كل مكان، ولن نتناقض بالظهور بمظهر علمي معقد أو العكس).\n4. تجنب تغيير رسائل البراند أسبوعياً: سنلتزم بنشر وتكرار نفس الرسائل لمدة 3 أشهر على الأقل لبناء وعي حقيقي في ذهن الزبون (Brand Awareness).",
+          guideTitle: "تفادي أخطاء الرسائل الكارثية",
+          guideDescription: "تكرار الفكرة الواحدة هو سر نجاح البراند. أي عشوائية أو تغيير مستمر في رسائلك سيحرمك من حفر اسمك في عقل العميل ويضيع ميزانيتك التسويقية.",
+          guidePoints: [
+            "الخطأ 1: رسائل كثيرة ومشتتة (التزم بـ 3 إلى 5 رسائل فقط).",
+            "الخطأ 2: بناء الرسالة على مواصفات وميزات تقنية جافة بدلاً من التركيز على التحول والشعور الكامن.",
+            "الخطأ 3: التناقض في الرسائل (الخلط بين العلمية المعقدة والبساطة، أو الطابع الاقتصادي الفائق والطابع الفاخر).",
+            "الخطأ 4: تغيير رسالة البراند كل أسبوع. التكرار والاستقرار هما ما يزرع الرسالة في عقل العميل."
+          ],
+          guideQuote: "تغيير رسالة البراند كل أسبوع كارثة... اللي بتزرعه في عقل الزبون هو اللي بيثبت، وهيك البراند تبعك بيعلق بباله."
         }
       ];
     } else if (sectionId === "contentFormats") {
@@ -1370,6 +1384,65 @@ export const SectionView: React.FC<SectionViewProps> = ({
                   ].map((pillar) => (
                     <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-rose-500/30 transition-all duration-200 text-right">
                       <div className="w-6 h-6 bg-rose-500/20 border border-rose-400/30 text-rose-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
+                        {pillar.num}
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Strategic Banner for Messaging Pillars */}
+        {sectionId === "messagePillars" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-amber-950 border border-indigo-500/20 p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20 text-right"
+            dir="rtl"
+          >
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Header section with quote */}
+              <div className="border-b border-indigo-500/20 pb-5">
+                <div className="flex items-center gap-3 mb-4 justify-end">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-indigo-400 font-bold block">الرؤية الاستراتيجية للرسائل</span>
+                    <h2 className="text-xl font-black text-white">منظومة الركائز الرسائلية وصناعة الهوية</h2>
+                  </div>
+                  <div className="p-2.5 bg-indigo-500/20 rounded-2xl border border-indigo-400/30 text-indigo-300">
+                    <Award className="w-6 h-6" />
+                  </div>
+                </div>
+                
+                <div className="relative bg-slate-950/40 border-r-4 border-amber-500 p-4 rounded-l-2xl rounded-r-md my-2 text-right">
+                  <Quote className="absolute top-2 left-2 w-8 h-8 text-white/5 pointer-events-none" />
+                  <p className="text-sm sm:text-base font-medium italic text-stone-200 leading-relaxed pl-6">
+                    "البراند تبعك هو اللي بيقوله الناس عنك وقت ما تكون إنت موجود بهيك غرفة"
+                  </p>
+                  <span className="block text-[10px] text-amber-400 mt-2 font-bold">— من اقتباسات المحاضرة العملية (مقولة جيف بيزوس)</span>
+                </div>
+              </div>
+
+              {/* Five pillars of messaging */}
+              <div>
+                <h3 className="text-xs font-bold text-indigo-300 mb-3 text-right">ركائز المنظومة الرسائلية للبراند:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3" dir="rtl">
+                  {[
+                    { num: "١", title: "الرسالة ضد الزاوية", desc: "الزاوية متغيرة لجلب انتباه الإعلان، والرسالة ركيزة ثابتة لبناء الهوية." },
+                    { num: "٢", title: "التحول والشعور", desc: "التركيز على تحول حياة الزبون وراحة باله بدلاً من المكونات الجافة." },
+                    { num: "٣", title: "تجنب التشتت", desc: "تحديد 3 إلى 5 رسائل ثابتة فقط لكل البراند لمنع تشتت الزبون." },
+                    { num: "٤", title: "تفريع الزوايا", desc: "توليد زوايا تسويقية لا نهائية (ألم، رغبة، اعتراض) تصب في نفس الرسائل." },
+                    { num: "٥", title: "الثبات والتكرار", desc: "الالتزام التام بالرسائل في المتجر والإعلانات والردود لبناء الوعي." }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-indigo-500/30 transition-all duration-200 text-right">
+                      <div className="w-6 h-6 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
                         {pillar.num}
                       </div>
                       <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
