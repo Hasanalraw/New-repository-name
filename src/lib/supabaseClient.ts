@@ -39,9 +39,10 @@ export function sanitizeSupabaseUrl(url: string): string {
 const rawCustomUrl = localStorage.getItem("custom_supabase_url") || "";
 const supabaseUrl = rawCustomUrl 
   ? sanitizeSupabaseUrl(rawCustomUrl) 
-  : (import.meta as any).env.VITE_SUPABASE_URL || "https://vtwufalyematvkubylcl.supabase.co";
+  : ((import.meta as any).env.VITE_SUPABASE_URL || "");
 
-const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0d3VmYWx5ZW1hdHZrdWJ5bGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMjAxMDUsImV4cCI6MjA5Nzg5NjEwNX0.2J5-UpQQY9OwBcMPmmNv1AdLgb3GzhjlrDcBqnyu-1o";
+const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || 
+  ((import.meta as any).env.VITE_SUPABASE_ANON_KEY || "");
 
 // Robust Mock Database structure in LocalStorage
 class MockSupabaseClient {

@@ -32,6 +32,11 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+
+  const handleAuthenticated = async (usr: any) => {
+    setUser(usr);
+    await loadUserAnswers(usr.id);
+  };
   
   // Password Recovery / Update password state
   const [showUpdatePassword, setShowUpdatePassword] = useState<boolean>(false);
@@ -809,7 +814,7 @@ export default function App() {
 
   // Auth Gate check
   if (!user) {
-    return <AuthGate onAuthenticated={(usr) => setUser(usr)} onToast={addToast} />;
+    return <AuthGate onAuthenticated={handleAuthenticated} onToast={addToast} />;
   }
 
   return (

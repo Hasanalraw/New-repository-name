@@ -41,7 +41,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     setLoading(true);
     
     setTimeout(() => {
-      if (portalPassword === "HasDTB2an2026?") {
+      const expectedPasscode = (import.meta as any).env.VITE_PORTAL_PASSCODE || "HasDTB2an2026?";
+      if (portalPassword === expectedPasscode) {
         localStorage.setItem("portal_unlocked", "true");
         let anonId = localStorage.getItem("anon_user_id");
         if (!anonId) {

@@ -10,6 +10,7 @@ import {
   Loader2, Sparkles, Key, LogOut, Database, Link, 
   Check, Code, Info, RefreshCw, Copy, CheckCircle
 } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 import { 
   supabase, 
   isRealSupabase, 
@@ -44,6 +45,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   const [customUrl, setCustomUrl] = useState(localStorage.getItem("custom_supabase_url") || "");
   const [customKey, setCustomKey] = useState(localStorage.getItem("custom_supabase_key") || "");
   const [isCopied, setIsCopied] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   if (!isOpen || !user) return null;
 
@@ -85,7 +87,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   };
 
   // Handle Custom Supabase Connection settings
-  const handleConnectSupabase = (e: React.FormEvent) => {
+  const handleConnectSupabase = async (e: React.FormEvent) => {
     e.preventDefault();
     const inputVal = customUrl.trim();
     const inputKey = customKey.trim();
@@ -123,10 +125,41 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       return;
     }
 
-    onToast("جاري ربط قاعدة البيانات وإعادة تحميل المنصة... 🔄", "info");
-    setTimeout(() => {
-      setCustomSupabaseCredentials(finalUrl, inputKey);
-    }, 1500);
+    setIsTestingConnection(true);
+    onToast("جاري اختبار الاتصال بقاعدة بيانات Supabase... 📡", "info");
+
+    try {
+      const testClient = createClient(finalUrl, inputKey);
+      const { error: testError } = await testClient
+        .from("user_data")
+        .select("user_id")
+        .limit(1);
+
+      if (testError) {
+        console.error("Test connection error:", testError);
+        const isTableMissing = testError.code === "42P01" || 
+                               (testError.message && testError.message.includes("user_data"));
+
+        if (isTableMissing) {
+          onToast("تم الاتصال بـ Supabase بنجاح! 🎉 ولكن جدول (user_data) غير موجود. يرجى تشغيل كود SQL في الأسفل لإنشاء الجدول، ثم جرب الحفظ.", "success");
+          setTimeout(() => {
+            setCustomSupabaseCredentials(finalUrl, inputKey);
+          }, 2000);
+        } else {
+          onToast(`فشل الاتصال: ${testError.message || "المفاتيح المدخلة غير صالحة"} ❌ يرجى التحقق من الرابط والمفتاح.`, "error");
+          setIsTestingConnection(false);
+        }
+      } else {
+        onToast("تم التحقق والاتصال بقاعدة بياناتك بنجاح! جاري تنشيط الربط... 🚀", "success");
+        setTimeout(() => {
+          setCustomSupabaseCredentials(finalUrl, inputKey);
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error("Connection exception:", err);
+      onToast(`حدث خطأ أثناء الاتصال: ${err.message || err} ❌`, "error");
+      setIsTestingConnection(false);
+    }
   };
 
   // Handle Reset to Default Sandbox/Mock Database
@@ -138,24 +171,35 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   };
 
   // SQL schema code snippet
-  const sqlSchema = `create table user_data (
+  const sqlSchema = `-- 1. إنشاء جدول user_data لحفظ إجابات المستخدمين وتقدمهم الدراسي
+create table if not exists public.user_data (
   user_id text primary key,
   email text,
-  answers jsonb,
-  progress numeric,
+  answers jsonb default '{}'::jsonb,
+  progress numeric default 0,
   updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
--- تفعيل سياسات الأمان RLS للسماح بالولوج الآمن بناءً على معرّف الجهاز
-alter table user_data enable row level security;
+-- 2. تفعيل نظام حماية Row Level Security (RLS)
+alter table public.user_data enable row level security;
 
--- السماح بالوصول الكامل والقراءة والكتابة والمسح لكافة العملاء
-create policy "Allow access by user_id" on user_data
-  for all using (true) with check (true);
+-- 3. مسح السياسات القديمة إن وجدت لتجنب الأخطاء
+drop policy if exists "Allow access by user_id" on public.user_data;
+drop policy if exists "Allow public access for anonymous users" on public.user_data;
 
--- ملاحظة: إذا واجهت مشاكل "Missing or insufficient permissions" أو RLS، 
--- يمكنك تعطيل RLS مؤقتاً للتجربة عن طريق تشغيل هذا السطر:
--- alter table user_data disable row level security;`;
+-- 4. إنشاء سياسة تسمح بالوصول الكامل (القراءة، الإدخال، التحديث، الحذف) لأي رمز وصول
+create policy "Allow public access for anonymous users" on public.user_data
+  for all
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+-- 5. منح جميع صلاحيات الاستخدام لرموز الـ API
+grant all privileges on table public.user_data to anon;
+grant all privileges on table public.user_data to authenticated;
+
+-- 6. تحديث ذاكرة التخزين المؤقت لـ PostgREST للتعرف الفوري على الجدول
+notify pgrst, 'reload schema';`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sqlSchema);
@@ -337,10 +381,20 @@ create policy "Allow access by user_id" on user_data
                 <div className="flex gap-2.5 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-black rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    disabled={isTestingConnection}
+                    className="flex-1 py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-black rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-55"
                   >
-                    <Link className="w-4 h-4" />
-                    <span>حفظ وربط قاعدة البيانات</span>
+                    {isTestingConnection ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>جاري فحص الاتصال...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link className="w-4 h-4" />
+                        <span>حفظ وربط قاعدة البيانات</span>
+                      </>
+                    )}
                   </button>
 
                   {isRealSupabase && (
