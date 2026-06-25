@@ -87,19 +87,45 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
   // Handle Custom Supabase Connection settings
   const handleConnectSupabase = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customUrl.trim() || !customKey.trim()) {
+    const inputVal = customUrl.trim();
+    const inputKey = customKey.trim();
+
+    if (!inputVal || !inputKey) {
       onToast("يرجى إدخال جميع بيانات الربط المطلوبة 🛑", "error");
       return;
     }
 
-    if (!customUrl.startsWith("https://")) {
-      onToast("يجب أن يبدأ عنوان مشروع Supabase بـ https:// 🌐", "error");
+    // Smart detection of common user errors (pasting project name like "Competitor analysis platform")
+    const isNameInput = !inputVal.includes(".") && (inputVal.includes(" ") || inputVal.length > 22 || !/^[a-zA-Z0-9_\-\s]+$/.test(inputVal));
+    if (isNameInput) {
+      onToast("تنبيه: يبدو أنك أدخلت اسم المشروع بدلاً من الرابط! يرجى إدخال رمز المشروع الفريد (vtwufalyematvkubylcl) أو الرابط الكامل 🌐", "error");
+      return;
+    }
+
+    let finalUrl = inputVal;
+    const dashboardRegex = /supabase\.com\/dashboard\/project\/([a-zA-Z0-9]+)/i;
+    const match = inputVal.match(dashboardRegex);
+    
+    if (match && match[1]) {
+      finalUrl = `https://${match[1]}.supabase.co`;
+      onToast("تم اكتشاف رابط لوحة التحكم وتعديله تلقائياً إلى رابط API الصحيح! ⚡", "info");
+    } else if (/^[a-zA-Z0-9]{20}$/.test(inputVal)) {
+      finalUrl = `https://${inputVal}.supabase.co`;
+      onToast("تم تحويل رمز المشروع الفريد إلى رابط قاعدة البيانات بنجاح! ⚡", "info");
+    }
+
+    if (!finalUrl.startsWith("https://") && !finalUrl.startsWith("http://")) {
+      finalUrl = "https://" + finalUrl;
+    }
+
+    if (!finalUrl.includes(".supabase.co") && !finalUrl.includes("localhost")) {
+      onToast("يرجى التحقق من الرابط! يجب أن يكون رابط مشروع Supabase ينتهي بـ .supabase.co 🛑", "error");
       return;
     }
 
     onToast("جاري ربط قاعدة البيانات وإعادة تحميل المنصة... 🔄", "info");
     setTimeout(() => {
-      setCustomSupabaseCredentials(customUrl.trim(), customKey.trim());
+      setCustomSupabaseCredentials(finalUrl, inputKey);
     }, 1500);
   };
 
@@ -123,9 +149,13 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
 -- تفعيل سياسات الأمان RLS للسماح بالولوج الآمن بناءً على معرّف الجهاز
 alter table user_data enable row level security;
 
--- السماح بالوصول الكامل والقراءة والكتابة فقط للأجهزة التي تملك المعرّف الفريد
+-- السماح بالوصول الكامل والقراءة والكتابة والمسح لكافة العملاء
 create policy "Allow access by user_id" on user_data
-  for all using (true) with check (true);`;
+  for all using (true) with check (true);
+
+-- ملاحظة: إذا واجهت مشاكل "Missing or insufficient permissions" أو RLS، 
+-- يمكنك تعطيل RLS مؤقتاً للتجربة عن طريق تشغيل هذا السطر:
+-- alter table user_data disable row level security;`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sqlSchema);

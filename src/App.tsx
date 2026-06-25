@@ -74,6 +74,12 @@ export default function App() {
         .eq("user_id", userId)
         .single();
 
+      // Check if it's a real connection error (code PGRST116 means 'no rows', which is normal for new users)
+      if (error && error.code !== "PGRST116") {
+        console.error("Supabase load error:", error);
+        addToast(`فشل تحميل البيانات من السحابة: ${error.message || "خطأ غير معروف"}. يرجى التحقق من صحة الرابط والمفتاح في الإعدادات 🛑`, "error");
+      }
+
       if (data && data.answers) {
         setUserAnswers(data.answers);
         addToast("تمت مزامنة تقدمك الدراسي من السحابة بنجاح! ⚡", "success");
@@ -84,16 +90,19 @@ export default function App() {
           const parsed = JSON.parse(localSaved);
           setUserAnswers(parsed);
           // Sync back to database
-          await supabase.from("user_data").upsert({
+          const { error: upsertErr } = await supabase.from("user_data").upsert({
             user_id: userId,
             answers: parsed,
             progress: calculateOverallProgress(parsed),
           });
+          if (upsertErr) {
+            console.error("Failed to sync local backup to database:", upsertErr);
+          }
         } else {
           setUserAnswers({});
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Could not fetch database answers, loading from LocalStorage:", err);
       // Fallback
       const localSaved = localStorage.getItem(`user_answers_${userId}`);
@@ -146,13 +155,27 @@ export default function App() {
 
     // Push to Supabase Database
     try {
-      await supabase.from("user_data").upsert({
+      const { error } = await supabase.from("user_data").upsert({
         user_id: user.id,
         answers: updatedAnswers,
         progress: calculateOverallProgress(updatedAnswers),
       });
-    } catch (err) {
+
+      if (error) {
+        console.error("Failed to push answers to Supabase:", error);
+        if (!silent) {
+          addToast(`فشل الحفظ في السحابة: ${error.message} (رمز: ${error.code}) ❌. تأكد من إعدادات الاتصال وتشغيل جدول قاعدة البيانات.`, "error");
+        }
+      } else {
+        if (!silent) {
+          addToast("تم الحفظ والمزامنة السحابية بنجاح! ☁️", "success");
+        }
+      }
+    } catch (err: any) {
       console.error("Failed to push answers to Supabase:", err);
+      if (!silent) {
+        addToast(`حدث خطأ أثناء الاتصال بقاعدة البيانات: ${err.message || err} ❌`, "error");
+      }
     }
   };
 
@@ -169,12 +192,18 @@ export default function App() {
       localStorage.removeItem(`temp_answers_${sectionId}`);
 
       try {
-        await supabase.from("user_data").upsert({
+        const { error } = await supabase.from("user_data").upsert({
           user_id: user.id,
           answers: updatedAnswers,
           progress: calculateOverallProgress(updatedAnswers),
         });
-      } catch (err) {
+        if (error) {
+          console.error("Reset DB sync failed:", error);
+          addToast(`فشل مسح البيانات من السحابة: ${error.message} ❌`, "error");
+        } else {
+          addToast("تم مسح البيانات وتحديث السحابة بنجاح 🧹", "success");
+        }
+      } catch (err: any) {
         console.error("Reset DB sync failed:", err);
       }
     } else {

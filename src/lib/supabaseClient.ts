@@ -6,8 +6,41 @@
 import { createClient } from "@supabase/supabase-js";
 import { PlatformAnswers } from "../types";
 
+export function sanitizeSupabaseUrl(url: string): string {
+  let cleaned = url.trim();
+  if (!cleaned) return "";
+  
+  // Remove trailing slashes
+  cleaned = cleaned.replace(/\/+$/, "");
+
+  // If user pasted a dashboard project URL like:
+  // https://supabase.com/dashboard/project/vtwufalyematvkubylcl/editor/17660
+  // or https://supabase.com/dashboard/project/vtwufalyematvkubylcl
+  const dashboardRegex = /supabase\.com\/dashboard\/project\/([a-zA-Z0-9]+)/i;
+  const match = cleaned.match(dashboardRegex);
+  if (match && match[1]) {
+    return `https://${match[1]}.supabase.co`;
+  }
+  
+  // If user pasted just the 20-character project reference e.g., vtwufalyematvkubylcl
+  if (/^[a-zA-Z0-9]{20}$/.test(cleaned)) {
+    return `https://${cleaned}.supabase.co`;
+  }
+  
+  // Ensure it starts with https:// (or http:// for local testing)
+  if (!cleaned.startsWith("http://") && !cleaned.startsWith("https://")) {
+    cleaned = "https://" + cleaned;
+  }
+  
+  return cleaned;
+}
+
 // Check if actual Supabase environment variables or custom localStorage credentials are provided
-const supabaseUrl = localStorage.getItem("custom_supabase_url") || (import.meta as any).env.VITE_SUPABASE_URL || "https://vtwufalyematvkubylcl.supabase.co";
+const rawCustomUrl = localStorage.getItem("custom_supabase_url") || "";
+const supabaseUrl = rawCustomUrl 
+  ? sanitizeSupabaseUrl(rawCustomUrl) 
+  : (import.meta as any).env.VITE_SUPABASE_URL || "https://vtwufalyematvkubylcl.supabase.co";
+
 const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0d3VmYWx5ZW1hdHZrdWJ5bGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMjAxMDUsImV4cCI6MjA5Nzg5NjEwNX0.2J5-UpQQY9OwBcMPmmNv1AdLgb3GzhjlrDcBqnyu-1o";
 
 // Robust Mock Database structure in LocalStorage
@@ -206,7 +239,8 @@ export const supabase = isRealSupabase
  */
 export function setCustomSupabaseCredentials(url: string, key: string) {
   if (url && key) {
-    localStorage.setItem("custom_supabase_url", url);
+    const sanitizedUrl = sanitizeSupabaseUrl(url);
+    localStorage.setItem("custom_supabase_url", sanitizedUrl);
     localStorage.setItem("custom_supabase_key", key);
     window.location.reload();
   }

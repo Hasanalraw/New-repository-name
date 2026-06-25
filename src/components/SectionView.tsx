@@ -469,7 +469,6 @@ export const SectionView: React.FC<SectionViewProps> = ({
   // Perform a save action to the parent component (Supabase & localStorage permanent storage)
   const handleSaveAction = () => {
     onSave(sectionId, localAnswers);
-    onToast("تم الحفظ والمزامنة السحابية بنجاح! ☁️", "success");
     
     // In-app visual notification effect on sidebar trigger (will pass status upward)
     const sidebarDot = document.getElementById(`sync-dot-${sectionId}`);
