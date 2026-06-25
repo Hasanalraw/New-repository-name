@@ -498,21 +498,32 @@ export const SectionView: React.FC<SectionViewProps> = ({
       baselineExercises = [
         {
           id: "hooks_lines",
-          label: "صياغة 3 خطافات إعلانية جذابة وخاطفة للانتباه (Scroll-Stoppers):",
-          placeholder: "مثال:\n1. 'لماذا يفشل أغلب الناس في الالتزام بالفيتامينات؟' (هوك فضول)\n2. 'إذا كان ظهرك يؤلمك عند الجلوس الطويل، استمع لهذا..' (هوك مشكلة مباشرة)\n3. 'المشكلة ليست فيك، المشكلة في روتينك الصباحي!' (هوك صدمة ومفاجأة)...",
-          guideTitle: defaultMeta.tips[0].title,
-          guideDescription: defaultMeta.tips[0].description,
-          guidePoints: defaultMeta.tips[0].points,
-          guideQuote: defaultMeta.tips[0].quote
+          label: "1. صياغة 3 خطافات إعلانية (Scroll-Stoppers) لفظية وبصرية وتحديد المقاييس (Hook Rate):",
+          placeholder: "أدخل صياغة 3 خطافات مبتكرة لمنتجك بناءً على الأنواع العشرة وقاعدة كلام الناس:\n1. خطاف فضول أو صدمة (curiosity/shock) [بصري ولفظي]: 'المشكلة مو ببشرتك.. المشكلة بالـ Trends والعطور اللي بيحطوها!' (مع مشهد فتاة بوجه محمر).\n2. خطاف مشكلة مباشرة (direct problem): 'إذا صحتك صارت عبء ذهني عليك وكثرة علب الفيتامينات عم تتعبك.. اسمعني ثواني'.\n3. خطاف سؤال اختباري (test question): 'كم مرة اشتريت مكملات أو فيتامينات ونسيتها بآخر الدرج وغبّرت؟'.\n4. مقاييس النجاح المستهدفة: سنطلق الحملة ونراقب الـ Hook Rate (نسبة من شاهدوا أول 3 ثوانٍ) ونطمح لتجاوز 30% كحد أدنى (والوصول إلى 60% للهوك الرابح).",
+          guideTitle: "تصميم الهوكات وقياس الأداء",
+          guideDescription: "الهوك (Hook) هو أول 1 إلى 3 ثوانٍ من الفيديو (أو النص الرئيسي بالصورة). هو المحدد الوحيد لنجاح إعلانك؛ فإذا لم يوقف العميل عن التمرير (Scroll)، فلن يشاهد بقية الفيديو.",
+          guidePoints: [
+            "قاعدة ذهبية: لو معك 100 دولار للتسويق، ضع 80 دولار على الـ Hook و 20 دولار على بقية الفيديو.",
+            "اصنع هوكات فضولية ومقنعة للعميل المستهدف مباشرة، وتجنب الهوكات التضليلية العشوائية التي تجلب جمهوراً لا يشتري.",
+            "استخدم الهوكات البصرية (مشهد غريب، سقوط، حركة استثنائية) واللفظية (جملة صادمة، سؤال من ألم العميل الحقيقي).",
+            "استخرج الهوكات من 'كلام مراجعات زبائنك' الحقيقية (مثال لشكوى 'بنسى آخذ فيتاميناتي' -> هوك: إذا بتنسى تاخد فيتاميناتك فالسبب مو لأنك مهمل...)."
+          ],
+          guideQuote: "الهوك هو أهم جزء بالإعلان. إذا كان الهوك سيئاً، فباقي الفيديو -مهما كان جميلاً- لن يشاهده أحد."
         },
         {
           id: "ad_script",
-          label: "سيناريو الفيديو الإعلاني الكامل (المقدمة، المشكلة، الحل، والـ CTA):",
-          placeholder: "مثال لسيناريو كامل:\n- [0:00-0:03] (الهوك): 'كم مرة اشتريت مكملات ونسيتها في الدرج؟'\n- [0:03-0:10] (الموقف والمسألة): مشهد لشخص يفتح درباً مليئاً بعلب الفيتامينات المغبرة.\n- [0:10-0:20] (تضخيم الألم): 'التعقيد هو العدو الذي يمنعك من الوصول لجسم مثالي ونشاط مستمر.'\n- [0:20-0:35] (الحل): 'منتجنا يجمع كل تلك الفوائد في Scoop واحد سريع يذوب بـ 30 ثانية.'\n- [0:35-0:45] (العرض والضمان): 'ضمان ذهبي 100% لاسترجاع الأموال مع شحن مجاني لأول 100 طلب.'\n- [0:45-0:50] (CTA): 'اضغط هنا واطلب باقتك الموفرة الآن'...",
-          guideTitle: defaultMeta.tips[1].title,
-          guideDescription: defaultMeta.tips[1].description,
-          guidePoints: defaultMeta.tips[1].points,
-          guideQuote: defaultMeta.tips[1].quote
+          label: "2. كتابة سيناريو الإعلان الكامل وهيكلته (المقدمة، تضخيم الألم، الحل، الرد على الاعتراضات، والـ CTA):",
+          placeholder: "اكتب سيناريو إعلانك الكامل (Script) بمدته الزمنية والتفاصيل البصرية واللفظية:\n- [0:00 - 0:03] الـ Hook (لفظي وبصري): 'هذا هو السبب الحقيقي ليش أغلب الناس ما بتلتزم بصحتها' (شاب يفتح درجاً مليئاً بالحبوب المبعثرة).\n- [0:03 - 0:15] الشرير (التعقيد): 'الشرير مو الكسل، الشرير هو التعقيد.. حبوب كثيرة، علب مختلفة، نسيان متكرر، وبالنهاية بتستسلم وبتوقف'.\n- [0:15 - 0:30] تقديم البطل (منتجك): 'بدلها بعادة يومية واحدة.. scoop واحد من AG1 الصبح يغطي لك كل شي بيحتاجه جسمك بـ 30 ثانية'.\n- [0:30 - 0:45] الرد على الاعتراض (السعر): 'عارف إنك رح تقول غالي.. بس فكر فيها، لو بدك تشتري 18 مكمل غذائي منفصل رح تدفع أكثر من الضعف!'.\n- [0:45 - 0:55] الدليل والعرض (Evidence & Offer): لقطات سريعة لمراجعات العملاء مع عبارة 'أول مرة بلتزم بشيء بحياتي' + عرض شحن مجاني وضمان 30 يوم.\n- [0:55 - 1:00] الـ CTA (نداء الشراء): 'اضغط على الرابط تحت وجرب أبسط بداية لصحتك اليوم'.",
+          guideTitle: "هيكلة وكتابة الـ Scripts الإعلانية",
+          guideDescription: "كتابة الـ Script تعتمد على هياكل نفسية مدروسة لإقناع العميل. من أشهرها وأكثرها فعالية هيكل (الشرير ضد البطل) حيث تظهر المشكلة القديمة والتعقيد كعدو، ثم تقدم منتجك كبطل يخلص العميل منها.",
+          guidePoints: [
+            "احرص على أن يركز الفيديو بالكامل على 'فكرة واحدة وزاوية تسويقية واحدة' دون تشتيت العميل بعدة فوائد عشوائية.",
+            "قم بتضخيم الألم (Agitation) أو النتيجة المرجوة لشرح العواقب المستقبلية إذا لم يقم بحل مشكلته الآن.",
+            "ضع الرد على أكبر اعتراض (مثل السعر أو الثقة) فوراً بعد شرح الحل، لتجيب على شكوك العميل قبل اتخاذ القرار.",
+            "لا تكتفِ بالقول بل اعرض إثباتاً ودليلاً مرئياً (Show, Don't Tell) كتقييمات حقيقية أو لقطات قبل وبعد.",
+            "اختم بالـ CTA الواضح والمقترن بالعرض والسبب للشراء الآن (النداء السهل المباشر)."
+          ],
+          guideQuote: "الشرير بكون الحل القديم أو التعقيد، والبطل بكون منتجك.. اعرض الشرير وخل العميل يكرهه، ثم قدم البطل ياللي يخلصه من كل هالشر."
         }
       ];
     } else if (sectionId === "adStrategy") {
@@ -1516,6 +1527,65 @@ export const SectionView: React.FC<SectionViewProps> = ({
                   ].map((pillar) => (
                     <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-teal-500/30 transition-all duration-200 text-right">
                       <div className="w-6 h-6 bg-teal-500/20 border border-teal-400/30 text-teal-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
+                        {pillar.num}
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Strategic Banner for Hooks & Scripts */}
+        {sectionId === "hooksScripts" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-red-950 via-slate-900 to-stone-900 border border-red-500/20 p-6 sm:p-8 text-white shadow-xl shadow-red-950/20 text-right"
+            dir="rtl"
+          >
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-stone-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Header section with quote */}
+              <div className="border-b border-red-500/20 pb-5">
+                <div className="flex items-center gap-3 mb-4 justify-end">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-red-400 font-bold block">الرؤية الاستراتيجية للهوكات والسيناريو</span>
+                    <h2 className="text-xl font-black text-white">منظومة الخطافات وكتابة السيناريو الإعلاني</h2>
+                  </div>
+                  <div className="p-2.5 bg-red-500/20 rounded-2xl border border-red-400/30 text-red-300">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                </div>
+                
+                <div className="relative bg-slate-950/40 border-r-4 border-amber-500 p-4 rounded-l-2xl rounded-r-md my-2 text-right">
+                  <Quote className="absolute top-2 left-2 w-8 h-8 text-white/5 pointer-events-none" />
+                  <p className="text-sm sm:text-base font-medium italic text-stone-200 leading-relaxed pl-6">
+                    "لو كان معي ١٠٠ دولار للتسويق، رح أحط ٨٠ دولار على الهوك و٢٠ دولار على باقي الفيديو... لأنه إذا الهوك ما جذب الزبون، ما حدا رح يشوف إعلانك أصلاً"
+                  </p>
+                  <span className="block text-[10px] text-amber-400 mt-2 font-bold">— من اقتباسات المحاضرة العملية</span>
+                </div>
+              </div>
+
+              {/* Five pillars of hooks and scripts */}
+              <div>
+                <h3 className="text-xs font-bold text-red-300 mb-3 text-right">ركائز منظومة الخطافات وكتابة السيناريوهات:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3" dir="rtl">
+                  {[
+                    { num: "١", title: "الخطاف (Hook)", desc: "أول ١ إلى ٣ ثوانٍ، وهو المحدد الوحيد لنجاح الإعلان وجذب الزبون للتوقف." },
+                    { num: "٢", title: "هوك لفظي وبصري", desc: "دمج الخطاف اللفظي المستوحى من مراجعات العملاء بالخطاف البصري المثير للفضول." },
+                    { num: "٣", title: "معدل الدخول والبقاء", desc: "مراقبة الـ Hook Rate (> ٣٠٪) والـ Hold Rate (> ٢٠٪) لقياس كفاءة الإعلان." },
+                    { num: "٤", title: "الشرير ضد البطل", desc: "هيكلة السيناريو بجعل الحل القديم أو التعقيد هو الشرير، ومنتجك هو البطل المنقذ." },
+                    { num: "٥", title: "الردود والأدلة", desc: "معالجة أكبر الاعتراضات (السعر) بعد تقديم الحل مباشرة وتدعيمها بإثباتات مرئية." }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-red-500/30 transition-all duration-200 text-right">
+                      <div className="w-6 h-6 bg-red-500/20 border border-red-400/30 text-red-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
                         {pillar.num}
                       </div>
                       <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
