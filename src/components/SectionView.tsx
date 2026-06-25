@@ -7,7 +7,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowRight, Save, RotateCcw, Download, Sparkles, CheckCircle, 
-  AlertTriangle, UploadCloud, FileText, Loader2, BookOpen, Trash2
+  AlertTriangle, UploadCloud, FileText, Loader2, BookOpen, Trash2,
+  Quote, Users, Target
 } from "lucide-react";
 import { defaultLectures } from "../data/defaultLectures";
 import { SmartGuide } from "./SmartGuide";
@@ -1182,6 +1183,124 @@ export const SectionView: React.FC<SectionViewProps> = ({
 
       {/* Main Exercises List Container */}
       <div className="space-y-8">
+        {/* Strategic Banner for Target Audience */}
+        {sectionId === "targetAudience" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-950 border border-indigo-500/20 p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20 text-right"
+            dir="rtl"
+          >
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Header section with quote */}
+              <div className="border-b border-indigo-500/20 pb-5">
+                <div className="flex items-center gap-3 mb-4 justify-end">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-indigo-400 font-bold block">الرؤية الاستراتيجية للجمهور</span>
+                    <h2 className="text-xl font-black text-white">المنظومة الخماسية لفهم الإنسان والعميل المستهدف</h2>
+                  </div>
+                  <div className="p-2.5 bg-indigo-500/20 rounded-2xl border border-indigo-400/30 text-indigo-300">
+                    <Target className="w-6 h-6" />
+                  </div>
+                </div>
+                
+                <div className="relative bg-slate-950/40 border-r-4 border-amber-500 p-4 rounded-l-2xl rounded-r-md my-2 text-right">
+                  <Quote className="absolute top-2 left-2 w-8 h-8 text-white/5 pointer-events-none" />
+                  <p className="text-sm sm:text-base font-medium italic text-stone-200 leading-relaxed pl-6">
+                    "الإعلانات الناجحة مو ذكاء بالتسويق بل هي ذكاء بفهم الإنسان"
+                  </p>
+                  <span className="block text-[10px] text-amber-400 mt-2 font-bold">— من اقتباسات المحاضرة العملية</span>
+                </div>
+              </div>
+
+              {/* Five pillars of target audience */}
+              <div>
+                <h3 className="text-xs font-bold text-indigo-300 mb-3 text-right">ركائز المنظومة الخماسية لجمهورك:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3" dir="rtl">
+                  {[
+                    { num: "١", title: "تحديد المشكلة", desc: "البحث عن الوجع الحقيقي وليس تقسيم السن والجنس الجاف." },
+                    { num: "٢", title: "حالة المعاناة", desc: "فصل المعاناة المستمرة (Use Case) عن المواقف المحددة (Scene)." },
+                    { num: "٣", title: "عناصر الوجع", desc: "تشريح المشكلة والمشهد والأثر النفسي ثم الحل الذكي." },
+                    { num: "٤", title: "معجم الكلمات", desc: "حفظ الكلمات العامية الحرفية للجمهور واستخدامها مباشرة." },
+                    { num: "٥", title: "الدوافع والحلول", desc: "تفكيك المخاوف والاعتراضات لصياغة عروض تضمن الاستجابة." }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-indigo-500/30 transition-all duration-200 text-right">
+                      <div className="w-6 h-6 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
+                        {pillar.num}
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Strategic Banner for Competitors */}
+        {sectionId === "competitors" && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-slate-900 to-cyan-950 border border-emerald-500/20 p-6 sm:p-8 text-white shadow-xl shadow-emerald-950/20 text-right"
+            dir="rtl"
+          >
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            
+            <div className="relative z-10 space-y-6">
+              {/* Header section with quote */}
+              <div className="border-b border-emerald-500/20 pb-5">
+                <div className="flex items-center gap-3 mb-4 justify-end">
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">الرؤية الاستراتيجية للمنافسة</span>
+                    <h2 className="text-xl font-black text-white">منظومة استطلاع وتجاوز المنافسين</h2>
+                  </div>
+                  <div className="p-2.5 bg-emerald-500/20 rounded-2xl border border-emerald-400/30 text-emerald-300">
+                    <Users className="w-6 h-6" />
+                  </div>
+                </div>
+                
+                <div className="relative bg-slate-950/40 border-r-4 border-amber-500 p-4 rounded-l-2xl rounded-r-md my-2 text-right">
+                  <Quote className="absolute top-2 left-2 w-8 h-8 text-white/5 pointer-events-none" />
+                  <p className="text-sm sm:text-base font-medium italic text-stone-200 leading-relaxed pl-6">
+                    "إذا كنت تعرف منافسك شو عم يعمل، فإنت عرفت شو اللي لازم ما تعمله، وإذا عرفت عيوبه فإنت عرفت ميزتك التنافسية"
+                  </p>
+                  <span className="block text-[10px] text-amber-400 mt-2 font-bold">— من اقتباسات المحاضرة العملية</span>
+                </div>
+              </div>
+
+              {/* Five pillars of competitor analysis */}
+              <div>
+                <h3 className="text-xs font-bold text-emerald-300 mb-3 text-right">ركائز منظومة استطلاع المنافسين:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3" dir="rtl">
+                  {[
+                    { num: "١", title: "التصنيف الثلاثي", desc: "تقسيمهم لمنافسين مباشرين، متشابهين، ومنافسي المشكلة البدلاء." },
+                    { num: "٢", title: "تشريح المتجر", desc: "تحليل صور المنتجات، الرسائل، الأسعار وعناصر بناء الثقة والاستعجال." },
+                    { num: "٣", title: "استنطاق الإعلانات", desc: "رصد الإعلانات المستمرة لأكثر من شهر في مكتبات الإعلانات." },
+                    { num: "٤", title: "البحث عن الفجوات", desc: "اكتشاف ما يشتكي منه العملاء في تقييماتهم ولم يحله منافسوك بعد." },
+                    { num: "٥", title: "صياغة العرض الخارق", desc: "بناء تموضع متميز وعرض لا يمكن للعملاء رفضه أو مقارنته." }
+                  ].map((pillar) => (
+                    <div key={pillar.num} className="bg-slate-900/50 border border-slate-800 p-3.5 rounded-2xl hover:border-emerald-500/30 transition-all duration-200 text-right">
+                      <div className="w-6 h-6 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-black text-xs rounded-full flex items-center justify-center mb-2 mx-auto md:mx-0">
+                        {pillar.num}
+                      </div>
+                      <h4 className="text-xs font-bold text-white mb-1">{pillar.title}</h4>
+                      <p className="text-[10px] text-stone-400 leading-relaxed">{pillar.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {exercises.map((ex, index) => {
           const isAnswered = (localAnswers[ex.id] || "").trim().length > 5;
           
