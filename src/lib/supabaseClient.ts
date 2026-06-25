@@ -10,6 +10,9 @@ export function sanitizeSupabaseUrl(url: string): string {
   let cleaned = url.trim();
   if (!cleaned) return "";
   
+  // Remove /rest/v1 or /rest/v1/ suffix if pasted by mistake
+  cleaned = cleaned.replace(/\/rest\/v1\/?$/i, "");
+  
   // Remove trailing slashes
   cleaned = cleaned.replace(/\/+$/, "");
 

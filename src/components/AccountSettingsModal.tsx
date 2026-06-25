@@ -14,6 +14,7 @@ import { createClient } from "@supabase/supabase-js";
 import { 
   supabase, 
   isRealSupabase, 
+  sanitizeSupabaseUrl,
   setCustomSupabaseCredentials, 
   clearCustomSupabaseCredentials 
 } from "../lib/supabaseClient";
@@ -104,21 +105,7 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({
       return;
     }
 
-    let finalUrl = inputVal;
-    const dashboardRegex = /supabase\.com\/dashboard\/project\/([a-zA-Z0-9]+)/i;
-    const match = inputVal.match(dashboardRegex);
-    
-    if (match && match[1]) {
-      finalUrl = `https://${match[1]}.supabase.co`;
-      onToast("تم اكتشاف رابط لوحة التحكم وتعديله تلقائياً إلى رابط API الصحيح! ⚡", "info");
-    } else if (/^[a-zA-Z0-9]{20}$/.test(inputVal)) {
-      finalUrl = `https://${inputVal}.supabase.co`;
-      onToast("تم تحويل رمز المشروع الفريد إلى رابط قاعدة البيانات بنجاح! ⚡", "info");
-    }
-
-    if (!finalUrl.startsWith("https://") && !finalUrl.startsWith("http://")) {
-      finalUrl = "https://" + finalUrl;
-    }
+    const finalUrl = sanitizeSupabaseUrl(inputVal);
 
     if (!finalUrl.includes(".supabase.co") && !finalUrl.includes("localhost")) {
       onToast("يرجى التحقق من الرابط! يجب أن يكون رابط مشروع Supabase ينتهي بـ .supabase.co 🛑", "error");
