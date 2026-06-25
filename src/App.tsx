@@ -239,7 +239,7 @@ export default function App() {
       if (sectionId === "competitors") {
         fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"];
       } else if (sectionId === "targetAudience") {
-        fieldIds = ["audience_human_definition", "pain_moment_scenario", "deep_research_dictionary", "five_big_questions"];
+        fieldIds = ["audience_human_definition", "audience_pain_elements", "audience_deep_research", "audience_the_30min_rule", "audience_emotional_drivers", "audience_five_questions_profile", "audience_marketing_translation"];
       } else if (sectionId === "marketingAngles") {
         fieldIds = ["features_vs_angles", "angle_sources_extraction", "seven_levels_depth", "testing_scaling_strategy"];
       } else if (sectionId === "messagePillars") {
@@ -289,7 +289,7 @@ export default function App() {
         } catch {}
       } else {
         if (sec.id === "competitors") fieldIds = ["comp_direct_100", "comp_similar_70", "comp_alternative_solution", "comp_search_keywords", "comp_messaging_analysis", "comp_visuals_analysis", "comp_pricing_offer", "comp_trust_urgency", "comp_ads_hooks", "comp_opportunities_gaps", "comp_our_positioning"];
-        else if (sec.id === "targetAudience") fieldIds = ["audience_human_definition", "pain_moment_scenario", "deep_research_dictionary", "five_big_questions"];
+        else if (sec.id === "targetAudience") fieldIds = ["audience_human_definition", "audience_pain_elements", "audience_deep_research", "audience_the_30min_rule", "audience_emotional_drivers", "audience_five_questions_profile", "audience_marketing_translation"];
         else if (sec.id === "marketingAngles") fieldIds = ["features_vs_angles", "angle_sources_extraction", "seven_levels_depth", "testing_scaling_strategy"];
         else if (sec.id === "messagePillars") fieldIds = ["authority_trust", "speed_ease", "risk_reversal"];
         else if (sec.id === "contentFormats") fieldIds = ["ugc_videos", "carousel_graphics", "case_studies"];
@@ -342,10 +342,13 @@ export default function App() {
           ];
         } else if (sec.id === "targetAudience") {
           exerciseFields = [
-            { id: "audience_human_definition", label: "تعريف العميل كإنسان (تحديد من يواجه المشكلة وراء السن والجنس السطحي)" },
-            { id: "pain_moment_scenario", label: "تحليل لحظة الوجع والسيناريو اليومي (الوجع، المشهد الزماني/المكاني، المشاعر السلبية، الأمنية)" },
-            { id: "deep_research_dictionary", label: "قاموس كلمات ومصطلحات العميل الحقيقية (المستخرجة من المراجعات والمنصات)" },
-            { id: "five_big_questions", label: "الأسئلة الخمسة الكبرى وتحليل سيكولوجية الشراء العاطفية والحلول البديلة" }
+            { id: "audience_human_definition", label: "1. الانتقال من الفئة السطحية إلى تعريف العميل كإنسان (من يواجه المشكلة)" },
+            { id: "audience_pain_elements", label: "2. تحديد عناصر الوجع والـ Pain الأساسي" },
+            { id: "audience_deep_research", label: "3. مصادر البحث العميق وجمع تعليقات وشكاوى الجمهور" },
+            { id: "audience_the_30min_rule", label: "4. قاموس كلمات العميل (قاعدة الـ 30 دقيقة لجمع 30 تقييم وتعليق)" },
+            { id: "audience_emotional_drivers", label: "5. الدوافع العاطفية والمشاعر المسيطرة عند الشراء" },
+            { id: "audience_five_questions_profile", label: "6. الأسئلة الخمسة الكبرى لتحديد بروفايل العميل المستهدف" },
+            { id: "audience_marketing_translation", label: "7. تحويل بحوث الجمهور إلى خطافات إعلانية وعروض مغرية" }
           ];
         } else if (sec.id === "marketingAngles") {
           exerciseFields = [
