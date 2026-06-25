@@ -28,6 +28,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   // Forgot Password Modal
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -84,6 +85,38 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     } catch (err: any) {
       console.error(err);
       onToast(err.message || "فشل تسجيل الدخول. يرجى التأكد من البريد وكلمة المرور.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Phase 2: Sign up/Register new personal cloud credentials
+  const handlePersonalSignUpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      onToast("يرجى ملء جميع الحقول المطلوبة", "error");
+      return;
+    }
+    if (password.length < 6) {
+      onToast("يجب أن تتكون كلمة المرور الشخصية من 6 أحرف على الأقل 🔒", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const { data, error } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) throw error;
+      
+      onToast("تم إنشاء حسابك السحابي المستقل بنجاح وتفعيل مزامنة دراستك! 🎉", "success");
+      onAuthenticated(data.user);
+    } catch (err: any) {
+      console.error(err);
+      onToast(err.message || "فشل إنشاء الحساب الشخصي. يرجى المحاولة لاحقاً.", "error");
     } finally {
       setLoading(false);
     }
@@ -185,79 +218,151 @@ export const AuthGate: React.FC<AuthGateProps> = ({
             </motion.form>
           ) : (
             <motion.div
-              key="personal-login-form"
+              key="personal-auth-container"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
-              {/* Login Title Accent */}
-              <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
-                <span className="text-xs font-black text-stone-700 dark:text-stone-300">تسجيل الدخول للحساب الشخصي</span>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 dark:text-brand-secondary px-2 py-0.5 rounded-full font-bold">بوابة مغلقة ومؤمنة ✓</span>
+              {/* Tab Selector */}
+              <div className="flex bg-stone-100 dark:bg-stone-950 p-1 rounded-2xl border border-stone-200/50 dark:border-stone-800/50">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("signin")}
+                  className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                    activeTab === "signin"
+                      ? "bg-white dark:bg-stone-800 text-brand-primary dark:text-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+                  }`}
+                >
+                  تسجيل الدخول
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("signup")}
+                  className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
+                    activeTab === "signup"
+                      ? "bg-white dark:bg-stone-800 text-brand-primary dark:text-white shadow-sm"
+                      : "text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+                  }`}
+                >
+                  إنشاء حساب جديد
+                </button>
               </div>
 
-              {/* Email & Password Form */}
-              <form onSubmit={handlePersonalLoginSubmit} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                      required
-                    />
-                    <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+              {/* Dynamic Form Content */}
+              {activeTab === "signin" ? (
+                <form onSubmit={handlePersonalLoginSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                        required
+                      />
+                      <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">كلمة المرور الشخصية:</label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                      required
-                    />
-                    <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">كلمة المرور الشخصية:</label>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                        required
+                      />
+                      <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                    </div>
                   </div>
-                </div>
 
-                <div className="text-left">
+                  <div className="text-left">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotModal(true)}
+                      className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
+                    >
+                      نسيت كلمة المرور الشخصية؟
+                    </button>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setShowForgotModal(true)}
-                    className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
-                    نسيت كلمة المرور الشخصية؟
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>جاري التحقق والمزامنة السحابية...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>تسجيل دخول شخصي للوحة التحكم</span>
+                      </>
+                    )}
                   </button>
-                </div>
+                </form>
+              ) : (
+                <form onSubmit={handlePersonalSignUpSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                        required
+                      />
+                      <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                    </div>
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>جاري التحقق والمزامنة السحابية...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>تسجيل دخول شخصي للوحة التحكم</span>
-                    </>
-                  )}
-                </button>
-              </form>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">تعيين كلمة مرور جديدة للحساب:</label>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                        required
+                      />
+                      <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-700 dark:hover:bg-emerald-650 text-white rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>جاري تفعيل وإنشاء الحساب السحابي...</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>إنشاء وتفعيل حساب شخصي ✓</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
 
               {/* Back to passcode button */}
               <div className="text-center pt-2">
