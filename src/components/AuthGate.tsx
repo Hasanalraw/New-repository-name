@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
+import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft, Chrome } from "lucide-react";
+import { supabase, isRealSupabase } from "../lib/supabaseClient";
 
 interface AuthGateProps {
   onAuthenticated: (user: any) => void;
@@ -85,6 +85,25 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     } catch (err: any) {
       console.error(err);
       onToast(err.message || "فشل تسجيل الدخول. يرجى التأكد من البريد وكلمة المرور.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Google OAuth Sign In
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      console.error(err);
+      onToast(err.message || "فشل تسجيل الدخول بواسطة Google. يرجى التأكد من إعدادات OAuth في مشروع Supabase.", "error");
     } finally {
       setLoading(false);
     }
@@ -225,6 +244,22 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               transition={{ duration: 0.2 }}
               className="space-y-6"
             >
+              {/* Connection Status Indicator */}
+              <div className="flex items-center justify-between text-[10px] px-3.5 py-2 bg-stone-50 dark:bg-stone-950 rounded-xl border border-stone-200/40 dark:border-stone-850 text-stone-500 dark:text-stone-400">
+                <span>نظام قاعدة البيانات:</span>
+                {isRealSupabase ? (
+                  <span className="text-emerald-500 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    مشروع Supabase خاص متصل ✓
+                  </span>
+                ) : (
+                  <span className="text-amber-500 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    المحاكي السحابي الآمن (Sandbox)
+                  </span>
+                )}
+              </div>
+
               {/* Tab Selector */}
               <div className="flex bg-stone-100 dark:bg-stone-950 p-1 rounded-2xl border border-stone-200/50 dark:border-stone-800/50">
                 <button
@@ -311,6 +346,26 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                       </>
                     )}
                   </button>
+
+                  {isRealSupabase && (
+                    <>
+                      <div className="relative flex py-1 items-center">
+                        <div className="flex-grow border-t border-stone-200 dark:border-stone-800"></div>
+                        <span className="flex-shrink mx-3 text-[9px] text-stone-400 font-bold">أو الدخول بنقرة واحدة</span>
+                        <div className="flex-grow border-t border-stone-200 dark:border-stone-800"></div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        disabled={loading}
+                        className="w-full py-3 bg-white hover:bg-stone-50 border border-stone-200 dark:bg-stone-950 dark:hover:bg-stone-900 dark:border-stone-800 text-stone-700 dark:text-stone-300 rounded-2xl text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <Chrome className="w-4 h-4 text-rose-500 shrink-0" />
+                        <span>تسجيل الدخول بواسطة Google</span>
+                      </button>
+                    </>
+                  )}
                 </form>
               ) : (
                 <form onSubmit={handlePersonalSignUpSubmit} className="space-y-4">

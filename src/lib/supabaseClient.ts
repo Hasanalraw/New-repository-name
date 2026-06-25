@@ -7,8 +7,8 @@ import { createClient } from "@supabase/supabase-js";
 import { PlatformAnswers } from "../types";
 
 // Check if actual Supabase environment variables or custom localStorage credentials are provided
-const supabaseUrl = localStorage.getItem("custom_supabase_url") || (import.meta as any).env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "";
+const supabaseUrl = localStorage.getItem("custom_supabase_url") || (import.meta as any).env.VITE_SUPABASE_URL || "https://vtwufalyematvkubylcl.supabase.co";
+const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0d3VmYWx5ZW1hdHZrdWJ5bGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMjAxMDUsImV4cCI6MjA5Nzg5NjEwNX0.2J5-UpQQY9OwBcMPmmNv1AdLgb3GzhjlrDcBqnyu-1o";
 
 // Robust Mock Database structure in LocalStorage
 class MockSupabaseClient {
