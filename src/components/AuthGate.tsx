@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft, Chrome } from "lucide-react";
+import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft, Chrome, Info } from "lucide-react";
 import { supabase, isRealSupabase } from "../lib/supabaseClient";
 
 interface AuthGateProps {
@@ -33,6 +33,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   // Forgot Password Modal
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [showEmailWarning, setShowEmailWarning] = useState(false);
 
   useEffect(() => {
     // Check if the portal is already unlocked
@@ -84,6 +85,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
       onAuthenticated(data.user);
     } catch (err: any) {
       console.error(err);
+      setShowEmailWarning(true);
       onToast(err.message || "فشل تسجيل الدخول. يرجى التأكد من البريد وكلمة المرور.", "error");
     } finally {
       setLoading(false);
@@ -131,10 +133,17 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
       if (error) throw error;
       
-      onToast("تم إنشاء حسابك السحابي المستقل بنجاح وتفعيل مزامنة دراستك! 🎉", "success");
+      if (data?.user && !data?.session) {
+        setShowEmailWarning(true);
+        onToast("تم إنشاء الحساب بنجاح ولكن يرجى تعطيل تأكيد البريد في Supabase لتفعيل المزامنة والولوج المباشر.", "info");
+      } else {
+        onToast("تم إنشاء حسابك السحابي المستقل بنجاح وتفعيل مزامنة دراستك! 🎉", "success");
+      }
+      
       onAuthenticated(data.user);
     } catch (err: any) {
       console.error(err);
+      setShowEmailWarning(true);
       onToast(err.message || "فشل إنشاء الحساب الشخصي. يرجى المحاولة لاحقاً.", "error");
     } finally {
       setLoading(false);
@@ -259,6 +268,46 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                   </span>
                 )}
               </div>
+
+              {/* Troubleshooting toggle trigger */}
+              {isRealSupabase && (
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailWarning(!showEmailWarning)}
+                    className="text-[10px] text-amber-600 dark:text-amber-400 font-bold hover:underline cursor-pointer flex items-center justify-center gap-1 mx-auto bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/15"
+                  >
+                    <span>⚠️ هل تواجه مشكلة في تسجيل الدخول أو المزامنة؟ اضغط هنا للحل</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Email Warning Explanation Box */}
+              {isRealSupabase && showEmailWarning && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 text-xs text-stone-700 dark:text-stone-300 space-y-2 leading-relaxed"
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-400">
+                    <Info className="w-4 h-4 shrink-0" />
+                    <span>حل مشكلة الدخول وحفظ البيانات بنقرة واحدة:</span>
+                  </div>
+                  <p className="text-[11px] font-light text-stone-600 dark:text-stone-400">
+                    مشروع Supabase الجديد يقوم افتراضياً بتفعيل خيار <strong>تأكيد البريد (Confirm email)</strong>، مما يعطل الولوج والمزامنة حتى تؤكد بريدك الإلكتروني. لحلها فوراً:
+                  </p>
+                  <div className="text-[10px] space-y-1 font-semibold text-stone-700 dark:text-stone-300 pr-1">
+                    <div>1. افتح لوحة تحكم <strong>Supabase Dashboard</strong> الخاصة بك.</div>
+                    <div>2. انتقل إلى <strong>Authentication</strong> (أيقونة المفتاح في اليسار).</div>
+                    <div>3. اضغط على <strong>Providers</strong> ثم اختر <strong>Email</strong>.</div>
+                    <div>4. قم بإيقاف خيار <strong>Confirm email</strong> (اجعله مغلقاً).</div>
+                    <div>5. اضغط على زر <strong>Save</strong> في الأسفل لحفظ الإعداد.</div>
+                  </div>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                    ✓ بعد إغلاق هذا الخيار، ستتمكن من تسجيل الدخول فوراً وستظهر كافة بياناتك في جدول <code>user_data</code> بمجرد نقر زر الحفظ بالمنصة!
+                  </p>
+                </motion.div>
+              )}
 
               {/* Tab Selector */}
               <div className="flex bg-stone-100 dark:bg-stone-950 p-1 rounded-2xl border border-stone-200/50 dark:border-stone-800/50">
