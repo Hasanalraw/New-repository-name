@@ -4,9 +4,8 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Lock, Mail, ShieldCheck, Sparkles, Loader2, Key, ChevronLeft, Chrome, Info } from "lucide-react";
-import { supabase, isRealSupabase } from "../lib/supabaseClient";
+import { motion } from "motion/react";
+import { Lock, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 
 interface AuthGateProps {
   onAuthenticated: (user: any) => void;
@@ -19,164 +18,44 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   onToast,
   id
 }) => {
-  // Phase 1: Portal Lock (requires universal passcode)
-  const [isPortalUnlocked, setIsPortalUnlocked] = useState(false);
   const [portalPassword, setPortalPassword] = useState("");
   const [portalError, setPortalError] = useState("");
-
-  // Phase 2: Personal Cloud Login (requires pre-created account credentials)
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
-
-  // Forgot Password Modal
-  const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [showEmailWarning, setShowEmailWarning] = useState(false);
 
   useEffect(() => {
     // Check if the portal is already unlocked
     const unlocked = localStorage.getItem("portal_unlocked") === "true";
-    setIsPortalUnlocked(unlocked);
-
-    // Check if user session already exists
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        onAuthenticated(data.user);
+    if (unlocked) {
+      let anonId = localStorage.getItem("anon_user_id");
+      if (!anonId) {
+        anonId = "anon_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem("anon_user_id", anonId);
       }
-    };
-    checkUser();
+      onAuthenticated({ id: anonId, email: "anonymous@portal.com", isAnonymous: true });
+    }
   }, []);
 
-  // Handle Phase 1: Verify Universal Passcode
+  // Handle Verify Universal Passcode
   const handlePortalUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (portalPassword === "HasDTB2an2026?") {
-      localStorage.setItem("portal_unlocked", "true");
-      setIsPortalUnlocked(true);
-      onToast("تم فك قفل المنصة بنجاح! يرجى تسجيل الدخول بحسابك الشخصي.", "success");
-    } else {
-      setPortalError("الرمز الموحد غير صحيح! يرجى التأكد من الرمز والمحاولة مجدداً.");
-      onToast("الرمز الموحد لفك القفل خاطئ", "error");
-    }
-  };
-
-  // Handle Phase 2: Log in with personal cloud credentials
-  const handlePersonalLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      onToast("يرجى ملء جميع الحقول المطلوبة", "error");
-      return;
-    }
-
     setLoading(true);
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-
-      if (error) throw error;
-      
-      onToast("أهلاً بك! تم تسجيل دخولك الشخصي بنجاح ومزامنة دراستك.", "success");
-      onAuthenticated(data.user);
-    } catch (err: any) {
-      console.error(err);
-      setShowEmailWarning(true);
-      onToast(err.message || "فشل تسجيل الدخول. يرجى التأكد من البريد وكلمة المرور.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Google OAuth Sign In
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin
+    
+    setTimeout(() => {
+      if (portalPassword === "HasDTB2an2026?") {
+        localStorage.setItem("portal_unlocked", "true");
+        let anonId = localStorage.getItem("anon_user_id");
+        if (!anonId) {
+          anonId = "anon_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem("anon_user_id", anonId);
         }
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      console.error(err);
-      onToast(err.message || "فشل تسجيل الدخول بواسطة Google. يرجى التأكد من إعدادات OAuth في مشروع Supabase.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Phase 2: Sign up/Register new personal cloud credentials
-  const handlePersonalSignUpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      onToast("يرجى ملء جميع الحقول المطلوبة", "error");
-      return;
-    }
-    if (password.length < 6) {
-      onToast("يجب أن تتكون كلمة المرور الشخصية من 6 أحرف على الأقل 🔒", "error");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-      });
-
-      if (error) throw error;
-      
-      if (data?.user && !data?.session) {
-        setShowEmailWarning(true);
-        onToast("تم إنشاء الحساب بنجاح ولكن يرجى تعطيل تأكيد البريد في Supabase لتفعيل المزامنة والولوج المباشر.", "info");
+        onToast("تم فك قفل المنصة بنجاح! جاري تحميل ملفاتك المستقلة بأمان ⚡", "success");
+        onAuthenticated({ id: anonId, email: "anonymous@portal.com", isAnonymous: true });
       } else {
-        onToast("تم إنشاء حسابك السحابي المستقل بنجاح وتفعيل مزامنة دراستك! 🎉", "success");
+        setPortalError("الرمز الموحد غير صحيح! يرجى التأكد من الرمز والمحاولة مجدداً.");
+        onToast("الرمز الموحد لفك القفل خاطئ", "error");
+        setLoading(false);
       }
-      
-      onAuthenticated(data.user);
-    } catch (err: any) {
-      console.error(err);
-      setShowEmailWarning(true);
-      onToast(err.message || "فشل إنشاء الحساب الشخصي. يرجى المحاولة لاحقاً.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Reset Password Request (For forgotten passwords)
-  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail.trim()) {
-      onToast("يرجى كتابة بريدك الإلكتروني", "error");
-      return;
-    }
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase(), {
-        redirectTo: window.location.origin
-      });
-      if (error) throw error;
-      onToast("تم إرسال رابط استعادة كلمة المرور لبريدك الإلكتروني بنجاح! 📨", "success");
-      setShowForgotModal(false);
-      setForgotEmail("");
-    } catch (err: any) {
-      onToast(err.message || "فشل إرسال رابط الاستعادة", "error");
-    }
-  };
-
-  // Relock portal option for safety
-  const handleRelockPortal = () => {
-    localStorage.removeItem("portal_unlocked");
-    setIsPortalUnlocked(false);
-    setPortalPassword("");
-    setPortalError("");
-    onToast("تم قفل بوابة المنصة بأمان.", "info");
+    }, 600);
   };
 
   return (
@@ -193,340 +72,56 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           </div>
           <h2 className="text-2xl font-black text-brand-primary dark:text-white">المنصة الدراسية الذكية</h2>
           <p className="text-stone-500 dark:text-stone-400 text-xs font-light">
-            {isPortalUnlocked 
-              ? "سجل دخولك لحسابك الشخصي المستقل لمتابعة دراستك" 
-              : "المنصة محمية ومغلقة. يرجى إدخال الرمز الموحد لفك القفل"
-            }
+            المنصة محمية ومغلقة. يرجى إدخال الرمز الموحد لفك القفل والولوج لملفك المستقل.
           </p>
         </div>
 
-        {/* Dynamic Form Render based on Portal Unlocked state */}
-        <AnimatePresence mode="wait">
-          {!isPortalUnlocked ? (
-            <motion.form
-              key="portal-lock-form"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              onSubmit={handlePortalUnlockSubmit}
-              className="space-y-5"
-            >
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">الرمز الموحد لفك قفل المنصة:</label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={portalPassword}
-                    onChange={(e) => {
-                      setPortalPassword(e.target.value);
-                      setPortalError("");
-                    }}
-                    placeholder="أدخل الرمز الموحد المعتمد للمنصة..."
-                    className="w-full pl-4 pr-10 py-3.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                    required
-                  />
-                  <Lock className="w-4 h-4 text-stone-400 dark:text-stone-500 absolute top-4 right-3" />
-                </div>
-                {portalError && <p className="text-[10px] text-rose-500 font-semibold">{portalError}</p>}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>التحقق وفك قفل بوابة المنصة</span>
-              </button>
-              
-              <div className="bg-stone-50 dark:bg-stone-950/40 p-4 rounded-xl border border-stone-200/50 dark:border-stone-800/40 text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed font-light">
-                <strong className="text-brand-primary dark:text-brand-secondary block mb-1">🔒 بوابة حماية المنصة:</strong>
-                تم دمج هذا القفل الأمني لضمان عدم وصول أي زائر عشوائي من الخارج إلى صفحة تسجيل الدخول أو إثقال خوادم المنصة.
-              </div>
-            </motion.form>
-          ) : (
-            <motion.div
-              key="personal-auth-container"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6"
-            >
-              {/* Connection Status Indicator */}
-              <div className="flex items-center justify-between text-[10px] px-3.5 py-2 bg-stone-50 dark:bg-stone-950 rounded-xl border border-stone-200/40 dark:border-stone-850 text-stone-500 dark:text-stone-400">
-                <span>نظام قاعدة البيانات:</span>
-                {isRealSupabase ? (
-                  <span className="text-emerald-500 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    مشروع Supabase خاص متصل ✓
-                  </span>
-                ) : (
-                  <span className="text-amber-500 font-bold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    المحاكي السحابي الآمن (Sandbox)
-                  </span>
-                )}
-              </div>
-
-              {/* Troubleshooting toggle trigger */}
-              {isRealSupabase && (
-                <div className="text-center pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setShowEmailWarning(!showEmailWarning)}
-                    className="text-[10px] text-amber-600 dark:text-amber-400 font-bold hover:underline cursor-pointer flex items-center justify-center gap-1 mx-auto bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/15"
-                  >
-                    <span>⚠️ هل تواجه مشكلة في تسجيل الدخول أو المزامنة؟ اضغط هنا للحل</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Email Warning Explanation Box */}
-              {isRealSupabase && showEmailWarning && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 text-xs text-stone-700 dark:text-stone-300 space-y-2 leading-relaxed"
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-400">
-                    <Info className="w-4 h-4 shrink-0" />
-                    <span>حل مشكلة الدخول وحفظ البيانات بنقرة واحدة:</span>
-                  </div>
-                  <p className="text-[11px] font-light text-stone-600 dark:text-stone-400">
-                    مشروع Supabase الجديد يقوم افتراضياً بتفعيل خيار <strong>تأكيد البريد (Confirm email)</strong>، مما يعطل الولوج والمزامنة حتى تؤكد بريدك الإلكتروني. لحلها فوراً:
-                  </p>
-                  <div className="text-[10px] space-y-1 font-semibold text-stone-700 dark:text-stone-300 pr-1">
-                    <div>1. افتح لوحة تحكم <strong>Supabase Dashboard</strong> الخاصة بك.</div>
-                    <div>2. انتقل إلى <strong>Authentication</strong> (أيقونة المفتاح في اليسار).</div>
-                    <div>3. اضغط على <strong>Providers</strong> ثم اختر <strong>Email</strong>.</div>
-                    <div>4. قم بإيقاف خيار <strong>Confirm email</strong> (اجعله مغلقاً).</div>
-                    <div>5. اضغط على زر <strong>Save</strong> في الأسفل لحفظ الإعداد.</div>
-                  </div>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-                    ✓ بعد إغلاق هذا الخيار، ستتمكن من تسجيل الدخول فوراً وستظهر كافة بياناتك في جدول <code>user_data</code> بمجرد نقر زر الحفظ بالمنصة!
-                  </p>
-                </motion.div>
-              )}
-
-              {/* Tab Selector */}
-              <div className="flex bg-stone-100 dark:bg-stone-950 p-1 rounded-2xl border border-stone-200/50 dark:border-stone-800/50">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("signin")}
-                  className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                    activeTab === "signin"
-                      ? "bg-white dark:bg-stone-800 text-brand-primary dark:text-white shadow-sm"
-                      : "text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
-                  }`}
-                >
-                  تسجيل الدخول
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("signup")}
-                  className={`flex-1 py-2.5 text-xs font-black rounded-xl transition-all cursor-pointer ${
-                    activeTab === "signup"
-                      ? "bg-white dark:bg-stone-800 text-brand-primary dark:text-white shadow-sm"
-                      : "text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
-                  }`}
-                >
-                  إنشاء حساب جديد
-                </button>
-              </div>
-
-              {/* Dynamic Form Content */}
-              {activeTab === "signin" ? (
-                <form onSubmit={handlePersonalLoginSubmit} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                        required
-                      />
-                      <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">كلمة المرور الشخصية:</label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                        required
-                      />
-                      <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
-                    </div>
-                  </div>
-
-                  <div className="text-left">
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotModal(true)}
-                      className="text-[10px] font-semibold text-brand-primary dark:text-brand-secondary hover:underline cursor-pointer"
-                    >
-                      نسيت كلمة المرور الشخصية؟
-                    </button>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>جاري التحقق والمزامنة السحابية...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        <span>تسجيل دخول شخصي للوحة التحكم</span>
-                      </>
-                    )}
-                  </button>
-
-                  {isRealSupabase && (
-                    <>
-                      <div className="relative flex py-1 items-center">
-                        <div className="flex-grow border-t border-stone-200 dark:border-stone-800"></div>
-                        <span className="flex-shrink mx-3 text-[9px] text-stone-400 font-bold">أو الدخول بنقرة واحدة</span>
-                        <div className="flex-grow border-t border-stone-200 dark:border-stone-800"></div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={handleGoogleSignIn}
-                        disabled={loading}
-                        className="w-full py-3 bg-white hover:bg-stone-50 border border-stone-200 dark:bg-stone-950 dark:hover:bg-stone-900 dark:border-stone-800 text-stone-700 dark:text-stone-300 rounded-2xl text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <Chrome className="w-4 h-4 text-rose-500 shrink-0" />
-                        <span>تسجيل الدخول بواسطة Google</span>
-                      </button>
-                    </>
-                  )}
-                </form>
-              ) : (
-                <form onSubmit={handlePersonalSignUpSubmit} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">البريد الإلكتروني الشخصي:</label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                        required
-                      />
-                      <Mail className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">تعيين كلمة مرور جديدة للحساب:</label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full pl-4 pr-10 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
-                        required
-                      />
-                      <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-700 dark:hover:bg-emerald-650 text-white rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>جاري تفعيل وإنشاء الحساب السحابي...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>إنشاء وتفعيل حساب شخصي ✓</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-
-              {/* Back to passcode button */}
-              <div className="text-center pt-2">
-                <button
-                  onClick={handleRelockPortal}
-                  className="text-[10px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
-                >
-                  <span>قفل البوابة والعودة لشاشة الرمز الموحد</span>
-                  <ChevronLeft className="w-3 h-3" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Forgot Password Modal */}
-      {showForgotModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-stone-900 p-6 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl max-w-sm w-full text-right space-y-4 animate-fade-in"
-          >
-            <div className="flex items-center gap-2 text-brand-primary dark:text-brand-secondary">
-              <Key className="w-5 h-5 shrink-0" />
-              <h3 className="font-bold text-base">استعادة كلمة المرور الشخصية:</h3>
-            </div>
-            <p className="text-[11px] text-stone-400 leading-relaxed">
-              أدخل بريدك الإلكتروني وسيرسل لك نظام المصادقة السحابية رابط استعادة وتحديث كلمة المرور لتعود فوراً إلى العمل.
-            </p>
-
-            <form onSubmit={handleForgotPasswordSubmit} className="space-y-3">
+        {/* Universal Passcode Form */}
+        <form onSubmit={handlePortalUnlockSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-stone-700 dark:text-stone-300">الرمز الموحد لفك قفل المنصة:</label>
+            <div className="relative">
               <input
-                type="email"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full pl-4 pr-3 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                type="password"
+                value={portalPassword}
+                onChange={(e) => {
+                  setPortalPassword(e.target.value);
+                  setPortalError("");
+                }}
+                placeholder="أدخل الرمز الموحد المعتمد للمنصة..."
+                className="w-full pl-4 pr-10 py-3.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl text-xs outline-none focus:ring-2 focus:ring-brand-secondary text-right"
+                disabled={loading}
                 required
               />
-              <div className="flex items-center justify-end gap-2.5 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotModal(false)}
-                  className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-white text-xs font-bold rounded-lg cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-bold rounded-lg cursor-pointer"
-                >
-                  أرسل الرابط
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+              <Lock className="w-4 h-4 text-stone-400 dark:text-stone-500 absolute top-4 right-3" />
+            </div>
+            {portalError && <p className="text-[10px] text-rose-500 font-semibold">{portalError}</p>}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 rounded-2xl text-xs font-bold shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>جاري التحقق وفك قفل الملف...</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-4 h-4" />
+                <span>التحقق وفك قفل بوابة المنصة</span>
+              </>
+            )}
+          </button>
+          
+          <div className="bg-stone-50 dark:bg-stone-950/40 p-4 rounded-xl border border-stone-200/50 dark:border-stone-800/40 text-[10px] text-stone-500 dark:text-stone-400 leading-relaxed font-light">
+            <strong className="text-brand-primary dark:text-brand-secondary block mb-1">🔒 بيئة دراسة مستقلة لكل جهاز:</strong>
+            بمجرد إدخال الرمز، ستحصل على نسختك الخاصة والمنفصلة تماماً لحفظ إجاباتك ومتابعة تقدمك من هذا المتصفح دون أن تتداخل بياناتك مع أي مستخدم آخر على الإطلاق!
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

@@ -109,57 +109,23 @@ export default function App() {
 
   // Keep track of user auth status
   useEffect(() => {
-    // Check URL hash/query for recovery parameters
-    const checkRecoveryHash = () => {
-      const hash = window.location.hash || window.location.search;
-      if (hash && (hash.includes("type=recovery") || hash.includes("access_token=") || hash.includes("recovery"))) {
-        setShowUpdatePassword(true);
-      }
-    };
-    checkRecoveryHash();
-
     const checkSession = async () => {
-      const isUnified = localStorage.getItem("is_logged_in_as_unified") === "true";
-      if (isUnified) {
-        const mockUser = { id: "unified-user", email: "unified@portal.com", isUnified: true };
+      const isPortalUnlocked = localStorage.getItem("portal_unlocked") === "true";
+      if (isPortalUnlocked) {
+        let anonId = localStorage.getItem("anon_user_id");
+        if (!anonId) {
+          anonId = "anon_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem("anon_user_id", anonId);
+        }
+        const mockUser = { id: anonId, email: "anonymous@portal.com", isAnonymous: true };
         setUser(mockUser);
-        await loadUserAnswers("unified-user");
-        setIsLoading(false);
-        return;
-      }
-
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        setUser(data.user);
-        await loadUserAnswers(data.user.id);
+        await loadUserAnswers(anonId);
       } else {
         setUser(null);
         setIsLoading(false);
       }
     };
     checkSession();
-
-    // Listen to changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setShowUpdatePassword(true);
-      }
-      if (session?.user) {
-        localStorage.removeItem("is_logged_in_as_unified");
-        setUser(session.user);
-        await loadUserAnswers(session.user.id);
-      } else {
-        const isUnified = localStorage.getItem("is_logged_in_as_unified") === "true";
-        if (!isUnified) {
-          setUser(null);
-          setUserAnswers({});
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   // Save changes permanent
@@ -773,13 +739,11 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem("is_logged_in_as_unified");
-    sessionStorage.removeItem("portal_unlocked_at");
-    await supabase.auth.signOut();
+    localStorage.removeItem("portal_unlocked");
     setUser(null);
     setUserAnswers({});
     setActiveSectionId(null);
-    addToast("تم تسجيل خروجك بأمان. رافقتك السلامة!", "info");
+    addToast("تم قفل بوابة المنصة بأمان. رافقتك السلامة!", "info");
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -814,72 +778,9 @@ export default function App() {
     );
   }
 
-  // Auth Gate check (Bypassed if showUpdatePassword is true so recovery user can update password)
-  if (!user && !showUpdatePassword) {
+  // Auth Gate check
+  if (!user) {
     return <AuthGate onAuthenticated={(usr) => setUser(usr)} onToast={addToast} />;
-  }
-
-  // Password Update Form for Password Recovery flow
-  if (showUpdatePassword) {
-    return (
-      <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4 sm:p-6 font-sans text-right" dir="rtl">
-        <div className="w-full max-w-md bg-stone-950 border border-stone-800 rounded-3xl shadow-2xl overflow-hidden p-8 space-y-6">
-          <div className="text-center space-y-3">
-            <div className="mx-auto w-12 h-12 bg-brand-secondary/10 rounded-full flex items-center justify-center text-brand-secondary">
-              <Key className="w-6 h-6" />
-            </div>
-            <h2 className="text-xl font-bold text-white">تحديث كلمة المرور الشخصية</h2>
-            <p className="text-xs text-stone-400">يرجى كتابة كلمة المرور الجديدة لحسابك الشخصي لمتابعة عملك بأمان.</p>
-          </div>
-
-          <form onSubmit={handleUpdatePassword} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-stone-300">كلمة المرور الجديدة</label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
-                  className="w-full px-4 py-3 bg-stone-900 border border-stone-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-secondary text-xs pr-10"
-                  required
-                />
-                <Lock className="w-4 h-4 text-stone-400 absolute top-3.5 right-3" />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={updatingPassword}
-              className="w-full py-3 bg-brand-secondary hover:bg-brand-secondary/90 disabled:bg-stone-800 disabled:text-stone-500 text-stone-950 font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {updatingPassword ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-stone-950" />
-                  <span>جاري تحديث الحساب...</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="w-4 h-4" />
-                  <span>تحديث وحفظ كلمة المرور</span>
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setShowUpdatePassword(false);
-                window.location.hash = "";
-              }}
-              className="w-full py-2.5 bg-transparent hover:bg-white/5 text-stone-400 font-semibold text-xs rounded-xl transition-all cursor-pointer border border-stone-800"
-            >
-              إلغاء والعودة لصفحة الدخول
-            </button>
-          </form>
-        </div>
-      </div>
-    );
   }
 
   return (
