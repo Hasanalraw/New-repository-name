@@ -31,6 +31,22 @@ if (geminiApiKey) {
   });
 }
 
+// Get the active Gemini client, prioritizing custom client key sent by front-end
+const getAiClient = (req: express.Request): GoogleGenAI | null => {
+  const headerKey = req.headers["x-gemini-api-key"];
+  if (headerKey && typeof headerKey === "string" && headerKey.trim()) {
+    return new GoogleGenAI({
+      apiKey: headerKey.trim(),
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return ai;
+};
+
 // API: Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", aiEnabled: !!ai });
@@ -45,9 +61,10 @@ app.post("/api/gemini/analyze", async (req, res) => {
       return res.status(400).json({ error: "محتوى المحاضرة مطلوب للتحليل" });
     }
 
-    if (!ai) {
+    const activeAi = getAiClient(req);
+    if (!activeAi) {
       return res.status(503).json({ 
-        error: "مفتاح Gemini API غير مهيأ بعد. يرجى تفعيله في الإعدادات أو استخدام البيانات الأساسية المتاحة." 
+        error: "مفتاح Gemini API غير مهيأ بعد. يرجى إدخال مفتاح الـ API الخاص بك في الخانة المخصصة." 
       });
     }
 
@@ -101,7 +118,7 @@ app.post("/api/gemini/analyze", async (req, res) => {
 ${content}
 ------------------`;
 
-    const response = await ai.models.generateContent({
+    const response = await activeAi.models.generateContent({
       model: "gemini-3.5-flash",
       contents: prompt,
       config: {
@@ -127,9 +144,10 @@ app.post("/api/gemini/assistant", async (req, res) => {
   try {
     const { sectionId, sectionTitle, userAnswers, currentQuestion } = req.body;
 
-    if (!ai) {
+    const activeAi = getAiClient(req);
+    if (!activeAi) {
       return res.status(503).json({
-        error: "الذكاء الاصطناعي غير متوفر حالياً. يرجى إعداد مفتاح API في الإعدادات."
+        error: "الذكاء الاصطناعي غير متوفر حالياً. يرجى إعداد مفتاح API الخاص بك."
       });
     }
 
@@ -145,7 +163,7 @@ ${JSON.stringify(userAnswers || {}, null, 2)}
 
 أعطِ المستخدم نصيحة تسويقية استراتيجية فريدة لمساعدته على إكمال هذا العمل بذكاء، مع استخلاص توصية بناءً على المدخلات المكتوبة.`;
 
-    const response = await ai.models.generateContent({
+    const response = await activeAi.models.generateContent({
       model: "gemini-3.5-flash",
       contents: prompt,
       config: {

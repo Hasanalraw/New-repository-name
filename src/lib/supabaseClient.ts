@@ -6,9 +6,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { PlatformAnswers } from "../types";
 
-// Check if actual Supabase environment variables are provided
-const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "";
+// Check if actual Supabase environment variables or custom localStorage credentials are provided
+const supabaseUrl = localStorage.getItem("custom_supabase_url") || (import.meta as any).env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = localStorage.getItem("custom_supabase_key") || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || "";
 
 // Robust Mock Database structure in LocalStorage
 class MockSupabaseClient {
@@ -33,7 +33,7 @@ class MockSupabaseClient {
       const normalizedEmail = email.trim().toLowerCase();
       
       if (users.some((u) => u.email.trim().toLowerCase() === normalizedEmail)) {
-        return { data: { user: null }, error: { message: "هذا البريد الإلكتروني مسجل بالفعل!" } };
+        return { data: { user: null }, error: { message: "هذا البريد الإلكتروني مسجل بالفعل! يرجى التبديل إلى تبويب 'تسجيل الدخول' وكتابة كلمة المرور للدخول بنجاح." } };
       }
 
       const newUser = {
@@ -57,10 +57,16 @@ class MockSupabaseClient {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const users = this.getStorageItem<any[]>("mock_supabase_users", []);
       const normalizedEmail = email.trim().toLowerCase();
+      
+      const emailExists = users.some((u) => u.email.trim().toLowerCase() === normalizedEmail);
+      if (!emailExists) {
+        return { data: { user: null }, error: { message: "هذا البريد الإلكتروني غير مسجل بعد! يرجى الضغط على 'إنشاء حساب سحابي' لتفعيل حسابك أولاً." } };
+      }
+      
       const user = users.find((u) => u.email.trim().toLowerCase() === normalizedEmail && u.password === password);
 
       if (!user) {
-        return { data: { user: null }, error: { message: "البريد الإلكتروني أو كلمة المرور غير صحيحة!" } };
+        return { data: { user: null }, error: { message: "كلمة المرور الشخصية غير صحيحة! يرجى التحقق من كلمة المرور أو استخدام رابط الاستعادة." } };
       }
 
       this.setStorageItem("mock_supabase_session_user", user);

@@ -39,7 +39,10 @@ export const FloatingAssistant: React.FC<FloatingAssistantProps> = ({
     try {
       const response = await fetch("/api/gemini/assistant", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-gemini-api-key": localStorage.getItem("custom_gemini_api_key") || ""
+        },
         body: JSON.stringify({
           sectionId: activeSectionId,
           sectionTitle: activeSection.title,

@@ -117,6 +117,15 @@ export default function App() {
     checkRecoveryHash();
 
     const checkSession = async () => {
+      const isUnified = localStorage.getItem("is_logged_in_as_unified") === "true";
+      if (isUnified) {
+        const mockUser = { id: "unified-user", email: "unified@portal.com", isUnified: true };
+        setUser(mockUser);
+        await loadUserAnswers("unified-user");
+        setIsLoading(false);
+        return;
+      }
+
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         setUser(data.user);
@@ -134,11 +143,15 @@ export default function App() {
         setShowUpdatePassword(true);
       }
       if (session?.user) {
+        localStorage.removeItem("is_logged_in_as_unified");
         setUser(session.user);
         await loadUserAnswers(session.user.id);
       } else {
-        setUser(null);
-        setUserAnswers({});
+        const isUnified = localStorage.getItem("is_logged_in_as_unified") === "true";
+        if (!isUnified) {
+          setUser(null);
+          setUserAnswers({});
+        }
       }
     });
 
@@ -758,6 +771,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem("is_logged_in_as_unified");
+    sessionStorage.removeItem("portal_unlocked_at");
     await supabase.auth.signOut();
     setUser(null);
     setUserAnswers({});

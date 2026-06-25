@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowRight, Save, RotateCcw, Download, Sparkles, CheckCircle, 
@@ -50,6 +50,19 @@ export const SectionView: React.FC<SectionViewProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [transcriptText, setTranscriptText] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [customApiKey, setCustomApiKey] = useState(localStorage.getItem("custom_gemini_api_key") || "");
+  const [showApiSetup, setShowApiSetup] = useState(!localStorage.getItem("custom_gemini_api_key"));
+  const [showApiInstructions, setShowApiInstructions] = useState(false);
+
+  // Sync state with localstorage on modal open
+  useEffect(() => {
+    if (showUploadModal) {
+      const storedKey = localStorage.getItem("custom_gemini_api_key") || "";
+      setCustomApiKey(storedKey);
+      setShowApiSetup(!storedKey);
+      setShowApiInstructions(false);
+    }
+  }, [showUploadModal]);
 
   // Load section meta
   const defaultMeta = defaultLectures.find((sec) => sec.id === sectionId) || defaultLectures[0];
@@ -231,10 +244,10 @@ export const SectionView: React.FC<SectionViewProps> = ({
           id: "risk_reversal",
           label: "خطة تفادي الأخطاء التسويقية الشائعة وبناء صورة ذهنية طويلة المدى لجمهورك:",
           placeholder: "مثال:\n- تفادي كثرة الرسائل: الالتزام بـ 4 رسائل واضحة فقط وعدم التشتت بفوائد تقنية دقيقة.\n- تجنب التركيز التقني: التركيز على 'التحول والشعور بالنشاط' بدلاً من الاكتفاء بسرد المكونات.\n- الاتساق والثبات: توحيد النبرة والأسلوب في كافة المنصات والمتجر لتبدو كبراند احترافي وموثوق ومستمر...",
-          guideTitle: defaultMeta.tips[1].title,
-          guideDescription: defaultMeta.tips[1].description,
-          guidePoints: defaultMeta.tips[1].points,
-          guideQuote: defaultMeta.tips[1].quote
+          guideTitle: (defaultMeta.tips[1] || defaultMeta.tips[0]).title,
+          guideDescription: (defaultMeta.tips[1] || defaultMeta.tips[0]).description,
+          guidePoints: (defaultMeta.tips[1] || defaultMeta.tips[0]).points,
+          guideQuote: (defaultMeta.tips[1] || defaultMeta.tips[0]).quote
         }
       ];
     } else if (sectionId === "contentFormats") {
@@ -291,17 +304,99 @@ export const SectionView: React.FC<SectionViewProps> = ({
     } else if (sectionId === "adStrategy") {
       baselineExercises = [
         {
-          id: "budget_allocation",
-          label: "هيكلية خطة الإعلانات واستراتيجية المحتوى لحملتك (الجمهور، الزوايا، العرض، القالب):",
-          placeholder: "مثال لتطبيق إطار العمل:\n1. الجمهور: المشغولات اللاتي يبحثن عن عادة صحية سهلة.\n2. الزاوية التسويقية: 'صحتك بدون تعقيد'.\n3. الرسالة المركزية: وعاء واحد يمنحك الطاقة اليومية دون الحاجة لعشرات علب الفيتامينات.\n4. آلية عمل الحل: تركيبة سريعة الذوبان تغطي كافة احتياجاتك الحيوية بملعقة واحدة.\n5. الدليل: توصية طبيب تغذية مع أكثر من 3000 مراجعة إيجابية.\n6. العرض: خصم 15% مع شحن مجاني وضمان استرداد أموال لمدة 30 يوماً.\n7. القالب: فيديو UGC تفاعلي مع لقطات مقارنة بصرية...",
-          guideTitle: defaultMeta.tips[0].title,
-          guideDescription: defaultMeta.tips[0].description,
-          guidePoints: defaultMeta.tips[0].points,
-          guideQuote: defaultMeta.tips[0].quote
+          id: "ad_strat_target_audience",
+          label: "1. تحديد الجمهور المستهدف بدقة لحملتك الإعلانية:",
+          placeholder: "مثال:\n- الجمهور: موظفو مكاتب ورجال أعمال (30-50 عاماً) يعانون من آلام الظهر الحادة والجلوس المكتبي الطويل.\n- الاحتياج الأكبر: تخفيف الآلام واستعادة القوام المستقيم خلال ساعات العمل دون مشدات خانقة.",
+          guideTitle: "تحديد الجمهور والعميل المستهدف",
+          guideDescription: "من هو العميل والجمهور المستهدف بالتحديد؟ حدد الفئة التي تعاني من المشكلة التي يحلها منتجك.",
+          guidePoints: [
+            "صنف الجمهور ديموغرافياً ونفسياً وسلوكياً.",
+            "اربط المشكلة بسيناريو حقيقي يمر به العميل يومياً.",
+            "استهدف فئة محددة للغاية لرفع كفاءة ومبيعات إعلانك."
+          ],
+          guideQuote: "المسوق العبقري لا يستهدف الجميع، بل يوجه رسالته نحو العميل الأكثر وجعاً وبحثاً عن الحل."
+        },
+        {
+          id: "ad_strat_marketing_angle",
+          label: "2. اختيار وتصميم الزاوية التسويقية (المدخل النفسي):",
+          placeholder: "مثال:\n- الزاوية: زاوية الراحة التامة والإنتاجية العالية في المكتب دون تشتيت الألم.\n- الفكرة: التركيز على 'العمل بذهن صافٍ ونشاط دائم طوال اليوم بفضل حزام الظهر السري'.",
+          guideTitle: "تصميم الزوايا التسويقية الإعلانية",
+          guideDescription: "ما هو المدخل النفسي أو العاطفي أو الرد على اعتراض الذي سيبنى عليه هذا الإعلان تحديداً؟",
+          guidePoints: [
+            "ركز على زاوية إعلانية واحدة واضحة لكل إعلان لمنع تشتيت العميل.",
+            "اختر زواية تلامس ألم العميل أو أمنيته أو تفكك مخاوفه.",
+            "استخدم جملاً مباشرة يشعر العميل من خلالها أنك تصف حالته الشخصية بدقة."
+          ],
+          guideQuote: "الزوايا الإعلانية الناجحة لا تصف مميزات منتجك، بل تصف النتيجة الحياتية التي يسعى العميل لتحقيقها."
+        },
+        {
+          id: "ad_strat_central_message",
+          label: "3. صياغة الرسالة المركزية والوعد الأساسي للحملة الإبداعية:",
+          placeholder: "مثال:\n- الرسالة: 'قوام مشدود يفيض بالثقة والراحة طوال ساعات عملك بملعقة واحدة وسهلة'.\n- الوعد: إعادة توجيه فقرات الظهر والتخلص من تشنج العضلات طوال يوم العمل دون مجهود.",
+          guideTitle: "صياغة الوعد التسويقي والرسالة",
+          guideDescription: "ما هي الرسالة والوعد المركزي الثابت الذي تقدمه هذه الحملة للعميل بشكل قاطع؟",
+          guidePoints: [
+            "اجعل الوعد واضحاً وسهلاً وبدون تعقيد إنشائي.",
+            "ركز على النتيجة النهائية والتحول المطلوب الذي يطمح له العميل.",
+            "اربط الوعد مباشرة باسم البراند لترسيخ الهوية."
+          ],
+          guideQuote: "العملاء لا يشترون الميزات، هم يشترون التحول والوعد بالراحة والنتائج الفعلية."
+        },
+        {
+          id: "ad_strat_unique_mechanism",
+          label: "4. تحديد آلية عمل الحل الفردية لمنتجك (لماذا حلنا يعمل تحديداً؟):",
+          placeholder: "مثال:\n- الآلية: نسيج طبي مرن متطور يعيد محاذاة العمود الفقري تدريجياً وبشكل غير مرئي بالكامل تحت بدلتك دون مضايقة.\n- الفرق: مرونة تامة تسمح لك بالحركة والقيادة بحرية دون الحاجة لخلع الحزام.",
+          guideTitle: "بناء الآلية الفريدة للمنتج",
+          guideDescription: "اشرح كيف يعمل منتجك بشكل مختلف ومتميز عن الحلول التقليدية في السوق ليعطي النتيجة المرجوة.",
+          guidePoints: [
+            "اشرح الميزة بطريقة علمية أو عملية تجذب المنطق.",
+            "بيّن للعميل سبب فشل محاولاته السابقة ونجاح آليتك.",
+            "اجعل الشرح مبسطاً ومفهوماً للعامة دون جفاف تقني."
+          ],
+          guideQuote: "الآلية الفريدة تمنح العميل دليلاً منطقياً يبرر به عقلياً رغبته العاطفية في الشراء."
+        },
+        {
+          id: "ad_strat_social_proof",
+          label: "5. صياغة الإثبات والدليل الاجتماعي لتعزيز الثقة بالحل وموثوقيته:",
+          placeholder: "مثال:\n- الإثبات: مراجعات موثقة لأكثر من 3000 موظف مكتب ومهندس تخلصوا تماماً من تشنج عضلات الظهر، مع ترشيح طبي معتمد.\n- الدليل: فيديوهات UGC حقيقية ومقارنات 'قبل وبعد' تظهر استقامة العمود الفقري بشكل ملحوظ.",
+          guideTitle: "ترسيخ أدلة الثقة والدليل الاجتماعي",
+          guideDescription: "ما هي الأدلة العملية، الشهادات، أو النتائج الموثقة التي ستعرضها لإزالة الشكوك تماماً؟",
+          guidePoints: [
+            "استخدم أرقاماً دقيقة وتجنب التعميمات المطلقة.",
+            "اعرض لقطات ومراجعات حقيقية بالصور والفيديوهات.",
+            "ادعم الإعلانات بآراء خبراء أو شهادات طبية/مخبرية إن وجدت."
+          ],
+          guideQuote: "الدليل القوي يقتل الشكوك ويبني جسر الثقة اللازم لتنفيذ عملية الدفع."
+        },
+        {
+          id: "ad_strat_irresistible_offer",
+          label: "6. بناء العرض الخارق والمحفز الحصري للشراء الفوري والضمان:",
+          placeholder: "مثال:\n- العرض: خصم 15% على أول طلب + شحن مجاني وسريع لكافة مناطق المملكة.\n- الضمان: ضمان ذهبي صارم واسترجاع فوري للأموال 100% خلال 30 يوماً في حال عدم الرضا التام.",
+          guideTitle: "تصميم عروض خارقة لا تُهزم",
+          guideDescription: "صغ عرضاً تسويقياً جذاباً يجعل العميل يشعر بالغباء والندم الشديد لو تراجع عن الشراء اليوم.",
+          guidePoints: [
+            "قدم ضماناً ذهبياً جريئاً يزيل عبء المخاطرة عن كاهل العميل تماماً.",
+            "ادمج قيمة إضافية (مثل شحن مجاني أو حزمة ثنائية موفرة).",
+            "اضف عامل ندرة أو استعجال لطلب الشراء الفوري."
+          ],
+          guideQuote: "اجعل عرضك من القوة والجاذبية بحيث يشعر العميل بفرصة فائتة لو لم يشترِ الآن."
+        },
+        {
+          id: "ad_strat_creative_format",
+          label: "7. اختيار وتخطيط القالب الإعلاني المناسب لعرض الفكرة بصرياً:",
+          placeholder: "مثال:\n- القالب: فيديو UGC تفاعلي يبدأ بهوك 'إعلان سري للموظفين اللي كتوفهم ذبلت في المكاتب!'.\n- التنفيذ: تصوير المهندس وهو يرتدي المشد الخفيف تحت ملابسه في المكتب ليوضح أنه مخفي تماماً ومريح.",
+          guideTitle: "تحديد شكل وقالب الإعلان الإبداعي",
+          guideDescription: "كيف ستظهر هذه الرسالة وتلك الزاوية بصرياً وحركياً للمشاهد على منصات التواصل؟",
+          guidePoints: [
+            "اختر شكلاً يتطابق مع الزاوية النفسية المحددة (UGC، POV، مقارنة).",
+            "احرص على أن تكون الثواني الأولى خاطفة ومبهرة تمنع التمرير.",
+            "اجعل الإنتاج واقعياً وصادقاً ومريحاً للعين وتجنب الرسميات المصطنعة."
+          ],
+          guideQuote: "القالب الصحيح يحمل الرسالة بأمان ويوصلها لقلب العميل بشكل عفوي وجذاب."
         },
         {
           id: "ab_testing_plan",
-          label: "خطة اختبار الزوايا الإعلانية ومجموعات المحتوى (قاعدة 1 زاوية = 5 إعلانات):",
+          label: "8. خطة اختبار الزوايا الإعلانية ومجموعات المحتوى (قاعدة 1 زاوية = 5 إعلانات):",
           placeholder: "مثال لتطبيق الخطة الإبداعية ومقاييس الأداء:\n- زاوية (التزام أسهل) سنصمم لها 5 أشكال:\n  1. إعلان مشهد (درج مكملات مبعثر).\n  2. إعلان روتين صباحي (تحضير في 5 ثوانٍ).\n  3. إعلان ذنب (عدم الالتزام بالفيتامينات التقليدية).\n  4. إعلان مقارنة بصري (حبوب ضد بودرة).\n  5. إعلان شهادة عميلة حقيقية.\n- مقاييس النجاح للتحسين:\n  * Hook Rate المستهدف: >30%\n  * Hold Rate المستهدف: >20%...",
           guideTitle: defaultMeta.tips[1].title,
           guideDescription: defaultMeta.tips[1].description,
@@ -313,19 +408,59 @@ export const SectionView: React.FC<SectionViewProps> = ({
     setExercises(baselineExercises);
   };
 
-  // Keep local state in sync with loaded answers
+  // Keep local state in sync with loaded answers ONLY on section/exercises load
   useEffect(() => {
+    // Try to load from temp answers first (unsaved drafts)
+    const tempSaved = localStorage.getItem(`temp_answers_${sectionId}`);
+    let draftAnswers: Record<string, string> = {};
+    if (tempSaved) {
+      try {
+        draftAnswers = JSON.parse(tempSaved);
+      } catch (e) {
+        draftAnswers = {};
+      }
+    }
+
     const initializedAnswers: Record<string, string> = {};
     exercises.forEach((ex) => {
-      initializedAnswers[ex.id] = answers[ex.id] || "";
+      // Priority: 1. Unsaved draft from temp, 2. Permanent saved answer from parent, 3. Empty string fallback
+      initializedAnswers[ex.id] = draftAnswers[ex.id] !== undefined ? draftAnswers[ex.id] : (answers[ex.id] || "");
     });
     setLocalAnswers(initializedAnswers);
-  }, [answers, exercises]);
+  }, [sectionId, exercises]);
+
+  // Ref to always hold the latest localAnswers for the asynchronous auto-save interval and unmount cleanup
+  const localAnswersRef = useRef(localAnswers);
+  useEffect(() => {
+    localAnswersRef.current = localAnswers;
+  }, [localAnswers]);
+
+  // Silent auto-save to parent state (and Supabase + LocalStorage) every 4 seconds when content exists
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentAnswers = localAnswersRef.current;
+      const hasContent = Object.values(currentAnswers).some(val => typeof val === "string" && val.trim());
+      if (hasContent) {
+        onSave(sectionId, currentAnswers);
+      }
+    }, 4000);
+
+    return () => {
+      clearInterval(interval);
+      // Final commit on unmount/navigation to avoid any possible data loss
+      const finalAnswers = localAnswersRef.current;
+      const hasContent = Object.values(finalAnswers).some(val => typeof val === "string" && val.trim());
+      if (hasContent) {
+        onSave(sectionId, finalAnswers);
+      }
+    };
+  }, [sectionId]);
 
   // Save changes locally to state and auto-save in localStorage
   const handleInputChange = (fieldId: string, value: string) => {
     const updated = { ...localAnswers, [fieldId]: value };
     setLocalAnswers(updated);
+    localAnswersRef.current = updated;
     
     // Auto-save to localstorage temporarily
     localStorage.setItem(`temp_answers_${sectionId}`, JSON.stringify(updated));
@@ -365,30 +500,362 @@ export const SectionView: React.FC<SectionViewProps> = ({
     setShowConfirmReset(false);
   };
 
-  // Partial export to structured Arabic TXT file
+  // Partial export to beautifully styled HTML/PDF report
   const handlePartialExport = () => {
-    let fileContent = `========================================\n`;
-    fileContent += `   منصة الدراسة التفاعلية الذكية | مخرجات مخصصة\n`;
-    fileContent += `========================================\n\n`;
-    fileContent += `القسم: ${sectionTitle}\n`;
-    fileContent += `تاريخ التصدير: ${new Date().toLocaleDateString("ar-EG")}\n`;
-    fileContent += `----------------------------------------\n\n`;
+    // Auto-save localAnswers to database first
+    onSave(sectionId, localAnswers);
 
+    let userEmail = "غير محدد";
+    try {
+      const sessionUserRaw = localStorage.getItem("mock_supabase_session_user");
+      if (sessionUserRaw) {
+        const sessionUser = JSON.parse(sessionUserRaw);
+        if (sessionUser && sessionUser.email) {
+          userEmail = sessionUser.email;
+        }
+      }
+    } catch (e) {}
+
+    const totalCount = exercises.length;
+    const completedCount = exercises.filter(ex => {
+      const ans = localAnswers[ex.id] || "";
+      return ans.trim().length > 5;
+    }).length;
+    const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    let qaItemsHtml = "";
     exercises.forEach((ex, idx) => {
-      const answer = localAnswers[ex.id] || "بانتظار الإدخال";
-      fileContent += `[${idx + 1}] السؤال: ${ex.label}\n`;
-      fileContent += `    الإجابة: ${answer}\n`;
-      fileContent += `----------------------------------------\n\n`;
+      const rawAnswer = localAnswers[ex.id] || "";
+      const isPending = !rawAnswer.trim() || rawAnswer.trim() === "بانتظار الإدخال" || rawAnswer.trim().length <= 5;
+      const answerVal = isPending ? "بانتظار الإدخال والتحليل والدراسة من قبلك..." : rawAnswer;
+
+      qaItemsHtml += `
+      <div class="qa-card">
+        <div class="question-header">
+          <span class="question-num">${idx + 1}</span>
+          <span class="question-label">${ex.label}</span>
+        </div>
+        <div class="answer-body ${isPending ? 'pending' : ''}">${answerVal}</div>
+      </div>`;
     });
 
-    const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+    const htmlContent = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تقرير تفصيلي: ${sectionTitle}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-primary: #235355;
+      --brand-secondary: #0DF1BA;
+      --stone-900: #1c1917;
+      --stone-800: #292524;
+      --stone-100: #f5f5f4;
+      --stone-200: #e7e5e4;
+      --stone-500: #78716c;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--stone-100);
+      color: var(--stone-900);
+      line-height: 1.75;
+      padding: 40px 20px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+    
+    /* Top Action Buttons Bar */
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    .btn-back {
+      color: var(--stone-500);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-print {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(35, 83, 85, 0.2);
+      transition: all 0.2s;
+    }
+    .btn-print:hover {
+      background: #153233;
+      transform: translateY(-1px);
+    }
+
+    /* Hero Banner Card */
+    .hero-card {
+      background: linear-gradient(135deg, var(--brand-primary) 0%, #112627 100%);
+      color: white;
+      padding: 40px;
+      border-radius: 28px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(35, 83, 85, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .hero-badge {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--brand-secondary);
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: inline-block;
+      background: rgba(13, 241, 186, 0.1);
+      padding: 4px 12px;
+      border-radius: 30px;
+    }
+    .hero-title {
+      font-size: 26px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+    .hero-desc {
+      font-size: 14px;
+      opacity: 0.85;
+      font-weight: 300;
+      max-width: 680px;
+      line-height: 1.6;
+    }
+    
+    /* Metadata Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-cols: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .meta-label {
+      font-size: 11px;
+      opacity: 0.6;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .meta-val {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* Progress Box */
+    .progress-box {
+      background: white;
+      padding: 25px 30px;
+      border-radius: 24px;
+      margin-bottom: 35px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.015);
+      border: 1px solid rgba(35, 83, 85, 0.08);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .progress-label {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--stone-800);
+    }
+    .progress-pct {
+      font-weight: 900;
+      color: var(--brand-primary);
+      font-size: 18px;
+    }
+    .progress-bar {
+      height: 10px;
+      background: var(--stone-200);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+      border-radius: 10px;
+      width: ${progressPct}%;
+    }
+
+    /* Q&A Cards */
+    .qa-card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.01);
+      border: 1px solid rgba(35, 83, 85, 0.08);
+      page-break-inside: avoid;
+    }
+    .question-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .question-num {
+      background: var(--brand-primary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .question-label {
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--stone-800);
+      line-height: 1.5;
+    }
+    .answer-body {
+      background: #fafaf9;
+      padding: 20px 24px;
+      border-radius: 18px;
+      font-size: 13px;
+      color: var(--stone-900);
+      white-space: pre-wrap;
+      border-right: 4px solid var(--brand-primary);
+      line-height: 1.75;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.01);
+    }
+    .answer-body.pending {
+      color: var(--stone-500);
+      font-style: italic;
+      border-right: 4px solid var(--stone-200);
+      background: #fdfdfd;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--stone-500);
+      margin-top: 50px;
+      border-top: 1px solid var(--stone-200);
+      padding-top: 25px;
+      line-height: 1.8;
+    }
+    
+    /* Print overrides */
+    @media print {
+      body {
+        background-color: white;
+        padding: 0;
+      }
+      .actions-bar {
+        display: none;
+      }
+      .qa-card {
+        box-shadow: none;
+        border: 1px solid #e7e5e4;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Action controllers -->
+    <div class="actions-bar">
+      <a href="#" class="btn-back" onclick="window.close(); return false;">
+        <span>← العودة للمنصة</span>
+      </a>
+      <button class="btn-print" onclick="window.print()">
+        <span>طباعة التقرير أو الحفظ كـ PDF 🖨️</span>
+      </button>
+    </div>
+
+    <!-- Title and details card -->
+    <div class="hero-card">
+      <span class="hero-badge">مخرجات القسم الفردية</span>
+      <h1 class="hero-title">${sectionTitle}</h1>
+      <p class="hero-desc">${sectionDesc}</p>
+      
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">الحساب البريدي المالك</span>
+          <span class="meta-val">${userEmail}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">تاريخ التصدير</span>
+          <span class="meta-val">${new Date().toLocaleDateString("ar-EG")}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">مستوى الإنجاز للقسم</span>
+          <span class="meta-val">${completedCount} من أصل ${totalCount} مخرجات مكتملة</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress indicator -->
+    <div class="progress-box">
+      <div class="progress-header">
+        <span class="progress-label">نسبة اكتمال مخرجات هذا القسم</span>
+        <span class="progress-pct">${progressPct}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- List of Q&A blocks -->
+    <div class="questions-list">
+      ${qaItemsHtml}
+    </div>
+
+    <!-- Brand copyright footer -->
+    <div class="footer">
+      <p>صُمم هذا التقرير بدقة بواسطة <strong>منصة الدراسة التفاعلية الذكية للاستراتيجيات التسويقية</strong>.</p>
+      <p>© جميع الحقوق محفوظة لمالك الحساب البريدي.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `تقرير_${sectionTitle.replace(/\s+/g, "_")}.txt`;
+    link.download = `استراتيجية_${sectionTitle.replace(/\s+/g, "_")}.html`;
     link.click();
     URL.revokeObjectURL(url);
-    onToast("تم تصدير ملف التقرير النصي بنجاح! 📥", "success");
+    onToast("تم تصدير تقرير القسم الأنيق بنجاح! 📥 يمكنك فتحه وطباعته أو حفظه كـ PDF بكبسة زر واحدة.", "success");
   };
 
   // Upload and parse custom lecture transcript using Gemini API
@@ -402,7 +869,10 @@ export const SectionView: React.FC<SectionViewProps> = ({
     try {
       const response = await fetch("/api/gemini/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-gemini-api-key": localStorage.getItem("custom_gemini_api_key") || ""
+        },
         body: JSON.stringify({
           content: transcriptText,
           sectionId,
@@ -687,59 +1157,155 @@ export const SectionView: React.FC<SectionViewProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             className="bg-white dark:bg-stone-900 p-6 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl max-w-xl w-full text-right space-y-4"
           >
-            <div className="flex items-center gap-3 text-brand-primary dark:text-brand-secondary">
-              <Sparkles className="w-5 h-5 shrink-0" />
-              <h3 className="font-bold text-lg">تخصيص الموديول بمحاضرتك التعليمية (AI):</h3>
-            </div>
-            
-            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
-              قم بلصق محتوى المحاضرة أو نص تفريغ الفيديو/الصوت بالكامل في المساحة أدناه. سيقوم المساعد الذكي <span className="font-bold text-brand-primary dark:text-brand-secondary">Gemini 3.5 Flash</span> بقراءة المحتوى وتحديث حقول العمل مع توليد دليل توجيهات تفصيلي مخصص للدرس فوراً!
-            </p>
+            {showApiSetup ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-amber-600 dark:text-brand-secondary">
+                  <AlertTriangle className="w-5 h-5 shrink-0 animate-bounce" />
+                  <h3 className="font-bold text-lg text-amber-600 dark:text-brand-secondary">مطلوب تهيئة مفتاح الـ API الخاص بـ Gemini أولاً</h3>
+                </div>
 
-            <div className="space-y-2">
-              <textarea
-                rows={6}
-                value={transcriptText}
-                onChange={(e) => setTranscriptText(e.target.value)}
-                placeholder="ألصق هنا النص التفريغي للمحاضرة أو الدرس المكتوب..."
-                className="w-full p-4 text-xs bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl outline-none focus:ring-2 focus:ring-brand-secondary resize-none"
-              />
-            </div>
+                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                  لتفعيل ميزة تخصيص هذا القسم بمحاضرتك الخارجية بالذكاء الاصطناعي مجاناً وبدون قيود، يرجى تزويد المنصة بمفتاح الـ API الخاص بك من Gemini. يتم تخزين المفتاح بشكل آمن بالكامل محلياً داخل متصفحك فحسب.
+                </p>
 
-            <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800">
-              <span className="text-[10px] text-stone-400">
-                ملاحظة: يتطلب هذا الإجراء تهيئة مفتاح الـ API للذكاء الاصطناعي بنجاح.
-              </span>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    setShowUploadModal(false);
-                    setTranscriptText("");
-                  }}
-                  className="px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-white text-xs font-bold rounded-xl cursor-pointer"
-                  disabled={isAnalyzing}
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handleAiLectureAnalysis}
-                  className="px-5 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-bold rounded-xl flex items-center gap-2 shadow-md cursor-pointer"
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>جاري المعالجة والتحليل...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>تحليل وصياغة التمارين</span>
-                    </>
-                  )}
-                </button>
+                {showApiInstructions ? (
+                  <div className="bg-stone-50 dark:bg-stone-950 p-4 border border-stone-100 dark:border-stone-800 rounded-2xl text-xs space-y-3 text-stone-700 dark:text-stone-300 leading-relaxed max-h-64 overflow-y-auto">
+                    <h4 className="font-bold text-brand-primary dark:text-brand-secondary flex items-center gap-1.5">
+                      <BookOpen className="w-4 h-4" /> شرح تفصيلي: كيف تحصل على مفتاح API مجاني بالكامل؟
+                    </h4>
+                    <ol className="list-decimal list-inside space-y-2 text-[11px]">
+                      <li>اذهب إلى منصة مطوري جوجل للذكاء الاصطناعي <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" className="text-brand-secondary underline font-bold">Google AI Studio</a>.</li>
+                      <li>قم بتسجيل الدخول باستخدام حساب Gmail العادي الخاص بك مجاناً.</li>
+                      <li>انقر فوق الزر الأزرق باليسار: <strong className="text-white bg-stone-800 px-1.5 py-0.5 rounded">Create API Key</strong>.</li>
+                      <li>اختر خيار <strong className="text-white bg-stone-800 px-1.5 py-0.5 rounded">Create API Key in new project</strong> لإنشاء مفتاح مجاني فوراً.</li>
+                      <li>انسخ المفتاح الناتج (يبدأ بـ <code className="font-mono bg-stone-200 dark:bg-stone-800 px-1 rounded">AIzaSy...</code>).</li>
+                      <li>ألصقه في الخانة أدناه واضغط على حفظ ومتابعة!</li>
+                    </ol>
+                    <button
+                      onClick={() => setShowApiInstructions(false)}
+                      className="w-full text-center py-1.5 mt-2 text-[10px] text-amber-500 hover:underline font-bold"
+                    >
+                      إخفاء الشرح والعودة للإدخال
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-stone-500">أدخل مفتاح Gemini API الخاص بك:</label>
+                      <input
+                        type="password"
+                        value={customApiKey}
+                        onChange={(e) => setCustomApiKey(e.target.value)}
+                        placeholder="ألصق مفتاحك هنا (AIzaSy...)"
+                        className="w-full p-3 text-xs bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl outline-none focus:ring-2 focus:ring-brand-secondary text-left font-mono"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowApiInstructions(true)}
+                        className="w-full py-2.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>شرح الحصول على المفتاح مجاناً</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800">
+                  <button
+                    onClick={() => {
+                      setShowUploadModal(false);
+                      setTranscriptText("");
+                    }}
+                    className="px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-white text-xs font-bold rounded-xl cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (!customApiKey.trim()) {
+                        onToast("يرجى إدخال مفتاح الـ API أولاً للمتابعة", "error");
+                        return;
+                      }
+                      localStorage.setItem("custom_gemini_api_key", customApiKey.trim());
+                      setShowApiSetup(false);
+                      onToast("تم تفعيل وحفظ مفتاح الـ API الخاص بك بنجاح! 🔑✨", "success");
+                    }}
+                    className="px-5 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-bold rounded-xl shadow-md cursor-pointer"
+                  >
+                    حفظ ومتابعة التخصيص
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-brand-primary dark:text-brand-secondary">
+                    <Sparkles className="w-5 h-5 shrink-0" />
+                    <h3 className="font-bold text-lg">تخصيص الموديول بمحاضرتك التعليمية (AI):</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowApiSetup(true)}
+                    className="text-[10px] text-amber-500 hover:underline font-bold"
+                  >
+                    إعدادات مفتاح الـ API ⚙️
+                  </button>
+                </div>
+                
+                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+                  قم بلصق محتوى المحاضرة أو نص تفريغ الفيديو/الصوت بالكامل في المساحة أدناه. سيقوم المساعد الذكي <span className="font-bold text-brand-primary dark:text-brand-secondary">Gemini 3.5 Flash</span> بقراءة المحتوى وتحديث حقول العمل مع توليد دليل توجيهات تفصيلي مخصص للدرس فوراً!
+                </p>
+
+                <div className="space-y-2">
+                  <textarea
+                    rows={6}
+                    value={transcriptText}
+                    onChange={(e) => setTranscriptText(e.target.value)}
+                    placeholder="ألصق هنا النص التفريغي للمحاضرة أو الدرس المكتوب..."
+                    className="w-full p-4 text-xs bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl outline-none focus:ring-2 focus:ring-brand-secondary resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-800">
+                  <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    مفتاح Gemini API نشط ومعدل
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setShowUploadModal(false);
+                        setTranscriptText("");
+                      }}
+                      className="px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-white text-xs font-bold rounded-xl cursor-pointer"
+                      disabled={isAnalyzing}
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      onClick={handleAiLectureAnalysis}
+                      className="px-5 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white dark:bg-brand-secondary dark:text-black dark:hover:bg-brand-secondary/90 text-xs font-bold rounded-xl flex items-center gap-2 shadow-md cursor-pointer"
+                      disabled={isAnalyzing}
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>جاري المعالجة والتحليل...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>تحليل وصياغة التمارين</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       )}
